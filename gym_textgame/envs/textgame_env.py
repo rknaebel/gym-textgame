@@ -55,10 +55,13 @@ class HomeWorld(object):
             'west':  [("Garden","Living"),("Kitchen","Bedroom")]
         }
 
-        #self.actions = ["eat", "sleep", "watch", "exercise", "go"]
+        self.actions = ["eat", "sleep", "watch", "exercise", "go"]
+        self.objects = self.env_objects.keys() + self.moves.keys()
+
         self.action_meanings = ["go " + d for d in self.moves.keys()] + ["{} {}".format(a,o) for o,(_,a,_) in self.env_objects.items()]
-        #self.objects = self.env_objects.keys() + self.moves.keys()
-        self.num_actions = len(self.action_meanings)
+        self.num_actions = len(self.actions)
+        self.num_objects = len(self.objects)
+
         self.rooms = self.descriptions.keys()
         self.quests = ['You are hungry','You are sleepy', 'You are bored', 'You are getting fat']
         self.quests_mislead = ['You are not hungry','You are not sleepy', 'You are not bored', 'You are not getting fat']
@@ -167,16 +170,14 @@ class HomeWorldEnv(gym.Env):
         self.observation_space = None
         self.vocab_space = self.env.get_vocab_size()
         # we have a two dimensional discrete action space: action x object
-        #self.action_space = spaces.Tuple((spaces.Discrete(self.env.num_actions),
-        #                                  spaces.Discrete(self.env.num_objects)))
-        self.action_space = spaces.Discrete(self.env.num_actions)
+        self.action_space = spaces.Tuple((spaces.Discrete(self.env.num_actions), spaces.Discrete(self.env.num_objects)))
         self.status = ""
 
     def get_action_meanings(self):
         return self.env.action_meanings
 
     def _step(self, action):
-        act,obj = self.env.action_meanings[action].split(" ")
+        act,obj = self.env.actions[action[0]], self.env.objects[action[1]]
         state, reward = self.env.do(act,obj)
         terminal = self.env.is_terminal()
 
