@@ -135,15 +135,15 @@ class HomeWorld(object):
                     if self.get_location() == from_loc:
                         self.state[0] = self.rooms.index(to_loc)
                         self.state[1] = random.randint(0,2)
-                        return self.get_output(), 0
+                        return self.get_output(), -0.01
             else:
                 obj_desc = self.env_objects[obj][2]
-                r = 1 if self.quest_actions.index(action) == self.state[2] else 0
+                r = 1 if self.quest_actions.index(action) == self.state[2] else -0.01
                 if r == 1: self.state[2] = -1
                 return obj_desc, r
         # if not, return "Nothing happend." and same state description
         else:
-            return "Nothing happend. " + self.get_output(), 0
+            return "Nothing happend. " + self.get_output(), -0.1
 
     def reset(self):
         location = random.randint(0,len(self.rooms)-1)
