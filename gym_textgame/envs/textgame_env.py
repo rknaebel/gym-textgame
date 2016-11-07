@@ -1,4 +1,4 @@
-import os, subprocess, time, signal
+import os, subprocess, time, signal, sys
 import random
 #random.seed(42)
 
@@ -172,6 +172,8 @@ class HomeWorldEnv(gym.Env):
         # we have a two dimensional discrete action space: action x object
         self.action_space = spaces.Tuple((spaces.Discrete(self.env.num_actions), spaces.Discrete(self.env.num_objects)))
         self.status = ""
+        self.last_action = None
+        self.last_state = None
 
     def get_action_meanings(self):
         return self.env.action_meanings
@@ -181,10 +183,21 @@ class HomeWorldEnv(gym.Env):
         state, reward = self.env.do(act,obj)
         terminal = self.env.is_terminal()
 
+        self.last_action = act + " " + obj
+        self.last_action = action
+        self.last_state = state
+
         return state, reward, terminal, {}
 
     def _reset(self):
-        return self.env.reset()
+        state = self.env.reset()
+        self.last_state = state
+        return state
 
     def _render(self, mode="human", close=False):
-        pass
+        #outfile = StringIO() if mode == 'ansi' else sys.stdout
+        outfile = sys.stdout
+        if self.last_action: outfile.write("> {}\n".format(self.last_action))
+        outfile.write("{}\n".format(self.last_state))
+        time.sleep(0.5)
+        return outfile
