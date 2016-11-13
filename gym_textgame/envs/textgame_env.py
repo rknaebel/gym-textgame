@@ -25,6 +25,7 @@ from gym.utils import seeding
 
 class HomeWorld(object):
     def __init__(self):
+        self.rng = random.Random()
         #
         # environment definition
         #
@@ -76,6 +77,9 @@ class HomeWorld(object):
 
         self.init_vocab()
         # reset and initialize environment
+
+    def set_seed(self, seed):
+        self.rng = random.Random(seed)
 
     def init_vocab(self):
         words = ([d for ds in self.descriptions.values() for d in ds] +
@@ -134,7 +138,7 @@ class HomeWorld(object):
                 for (from_loc,to_loc) in self.moves[obj]:
                     if self.get_location() == from_loc:
                         self.state[0] = self.rooms.index(to_loc)
-                        self.state[1] = random.randint(0,2)
+                        self.state[1] = self.rng.randint(0,2)
                         return self.get_output(), -0.01
             else:
                 obj_desc = self.env_objects[obj][2]
@@ -146,10 +150,10 @@ class HomeWorld(object):
             return "Nothing happend. " + self.get_output(), -0.1
 
     def reset(self):
-        location = random.randint(0,len(self.rooms)-1)
-        location_desc = random.randint(0,2)
-        quest = random.randint(0,len(self.quests)-1)
-        quest_mislead = random.randint(0,len(self.quests)-1)
+        location = self.rng.randint(0,len(self.rooms)-1)
+        location_desc = self.rng.randint(0,2)
+        quest = self.rng.randint(0,len(self.quests)-1)
+        quest_mislead = self.rng.randint(0,len(self.quests)-1)
         if quest_mislead == quest: quest_mislead = -1
 
         self.state = [location, location_desc, quest, quest_mislead]
@@ -184,7 +188,6 @@ class HomeWorldEnv(gym.Env):
         terminal = self.env.is_terminal()
 
         self.last_action = act + " " + obj
-        self.last_action = action
         self.last_state = state
 
         return state, reward, terminal, {}
@@ -192,7 +195,14 @@ class HomeWorldEnv(gym.Env):
     def _reset(self):
         state = self.env.reset()
         self.last_state = state
+        self.last_action = None
         return state
+
+    def _seed(self, seed=None):
+        if seed:
+            self.env.set_seed(seed)
+            return [seed]
+        return []
 
     def _render(self, mode="human", close=False):
         #outfile = StringIO() if mode == 'ansi' else sys.stdout
@@ -201,3 +211,15 @@ class HomeWorldEnv(gym.Env):
         outfile.write("{}\n".format(self.last_state))
         time.sleep(0.5)
         return outfile
+
+if __name__ == "__main__":
+    env = gym.make("HomeWorld-v0")
+    done = False
+
+    s = env.reset()
+    print s
+    while not done:
+        a = env.action_space.sample()
+        s, r, done, info = env.step(a)
+        print a, s
+    print "done!"
