@@ -7,6 +7,8 @@ from gym import error, spaces
 from gym import utils
 from gym.utils import seeding
 
+import spacy
+
 
 #import logging
 #logger = logging.getLogger(__name__)
@@ -30,50 +32,126 @@ class HomeWorld2(object):
         # environment definition
         #
         self.descriptions = {
-            "Living" : ["This room has a couch, chairs and TV.",
+            "living" : ["This room has a couch, chairs and TV.",
                         "You have entered the living room. You can watch TV here.",
                         "This room has two sofas, chairs and a chandelier."],
-            "Garden" : ["This space has a swing, flowers and trees.",
+            "garden" : ["This space has a swing, flowers and trees.",
                         "You have arrived at the garden. You can exercise here.",
                         "This area has plants, grass and rabbits."],
-            "Kitchen" : ["This room has a fridge, oven, and a sink.",
+            "kitchen" : ["This room has a fridge, oven, and a sink.",
                          "You have arrived in the kitchen. You can find food and drinks here.",
                          "This living area has pizza, coke, and icecream."],
-            "Bedroom" : ["This area has a bed, desk and a dresser.",
+            "bedroom" : ["This area has a bed, desk and a dresser.",
                          "You have arrived in the bedroom. You can rest here.",
                          "You see a wooden cot and a mattress on top of it."]
         }
+
+        self.rooms = self.descriptions.keys()
+
         self.env_objects = {
-            "tv" : ("Living", "watch", "A huge television that is great for watching games."),
-            "bike" : ("Garden", "exercise", "A nice shiny bike that is fun to ride."),
-            "apple" : ("Kitchen", "eat", "A red juicy fruit."),
-            "bed" : ("Bedroom", "sleep", "A nice, comfortable bed with pillows and sheets.")
-        }
-        self.moves = {
-            'north': [("Bedroom","Living"), ("Kitchen","Garden")],
-            'south': [("Living","Bedroom"), ("Garden","Kitchen")],
-            'east':  [("Living","Garden"),("Bedroom","Kitchen")],
-            'west':  [("Garden","Living"),("Kitchen","Bedroom")]
+            "tv" : "A huge television that is great for watching games.",
+            "bike" : "A nice shiny bike that is fun to ride.",
+            "apple" : "A red juicy fruit.",
+            "bed" : "A nice, comfortable bed with pillows and sheets.",
+            "rbutton" : "A red button.",
+            "gbutton" : "A green button.",
+            "bbutton" : "A blue button.",
+            "key" : "A little key to open the locked room.",
         }
 
-        self.actions = ["eat", "sleep", "watch", "exercise", "go"]
-        self.objects = self.env_objects.keys() + self.moves.keys()
+        self.definitions = {
+            ("eat apple") : [{
+                "conds" : {"room":"kitchen", "quest":"hungry"},
+                "effs"    : {"quest":""}
+            }],
+            ("sleep bed") : [{
+                "conds" : {"room":"bedroom", "quest":"sleepy"},
+                "effs"    : {"quest":""}
+            }],
+            ("watch tv") : [{
+                "conds" : {"room":"living", "quest":"bored"},
+                "effs"    : {"quest":""}
+            }],
+            ("exercise bike") : [{
+                "conds" : {"room":"garden", "quest":"fat"},
+                "effs"    : {"quest":""}
+            }],
+            ("press rbutton") : [{
+                "conds" : {},
+                "effs"    : {}
+            }],
+            ("press gbutton") : [{
+                "conds" : {},
+                "effs"    : {}
+            }],
+            ("press bbutton") : [{
+                "conds" : {},
+                "effs"    : {}
+            }],
+            ("get key") : [{
+                "conds" : {},
+                "effs"    : {}
+            }],
+            ("open door") : [{
+                "conds" : {},
+                "effs"    : {}
+            }],
+            #
+            # Move in direction
+            #
+            ("go north") : [
+                {"conds":{"room":"bedroom"}, "effs":{"room":"living"}},
+                {"conds":{"room":"kitchen"}, "effs":{"room":"garden"}}
+            ],
+            ("go south") : [
+                {"conds":{"room":"living"}, "effs":{"room":"bedroom"}},
+                {"conds":{"room":"garden"}, "effs":{"room":"kitchen"}}
+            ],
+            ("go east") : [
+                {"conds":{"room":"living"}, "effs":{"room":"garden"}},
+                {"conds":{"room":"bedroom"}, "effs":{"room":"kitchen"}}
+            ],
+            ("go west") : [
+                {"conds":{"room":"garden"}, "effs":{"room":"living"}},
+                {"conds":{"room":"kitchen"}, "effs":{"room":"bedroom"}}
+            ],
+        }
 
-        self.action_meanings = ["go " + d for d in self.moves.keys()] + ["{} {}".format(a,o) for o,(_,a,_) in self.env_objects.items()]
+        self.text = {
+            "quest" : {
+                "hungry" : "You are hungry",
+                "sleepy" : "You are sleepy",
+                "bored"  : "You are bored",
+                "fat"    : "You are getting fat",
+            },
+            "mislead" : {
+                "hungry" : "You are not hungry",
+                "sleepy" : "You are not sleepy",
+                "bored"  : "You are not bored",
+                "fat"    : "You are not getting fat",
+            }
+        }
+
+        self.actions = list({a.split(" ")[0] for a in self.definitions})
+        self.objects = list({a.split(" ")[1] for a in self.definitions})
+
         self.num_actions = len(self.actions)
         self.num_objects = len(self.objects)
 
-        self.rooms = self.descriptions.keys()
-        self.quests = ['You are hungry','You are sleepy', 'You are bored', 'You are getting fat']
-        self.quests_mislead = ['You are not hungry','You are not sleepy', 'You are not bored', 'You are not getting fat']
-
+        self.quests = ['hungry','sleepy', 'bored', 'fat']
         self.quest_actions = ['eat', 'sleep', 'watch' ,'exercise']
-        #self.quest_checklist = []
-        #self.mislead_quest_checklist = []
-
         self.extra_vocab = ['nothing', 'happend', 'not', 'but', 'now']
 
-        self.state = None
+        self.state = {
+            "room" : "",
+            "description" : "",
+            "quest" : "",
+            "mislead" : "",
+            "has_key" : "",
+            "old_food" : "",
+            "poisoned" : "",
+            "broken" : "",
+        }
 
         self.init_vocab()
         # reset and initialize environment
@@ -82,29 +160,29 @@ class HomeWorld2(object):
         self.rng = random.Random(seed)
 
     def init_vocab(self):
-        words = ([d for ds in self.descriptions.values() for d in ds] +
-                 [d[2] for d in self.env_objects.values()] +
-                 self.rooms +
-                 self.action_meanings +
-                 self.quests +
-                 self.extra_vocab)
-        self.vocab = reduce(lambda x,y: x | y, (set(d.split()) for d in words))
+        words = u" ".join(   [d for ds in self.descriptions.values() for d in ds] +
+                            self.env_objects.values() +
+                            [t for k,v in self.text.iteritems() for t in v.values()] +
+                            self.extra_vocab
+        )
+        nlp = spacy.load("en")
+        d = nlp(words)
+        self.vocab = set(map(lambda x: x.text, d))
 
     def get_vocab_size(self):
         return len(self.vocab)
 
-
     def get_quest(self):
-        _, _, q_i, qm_i = self.state
-        if q_i == -1: return "There is nothing to do."
-        if qm_i >= 0:
-            return "{} now but {} now.".format(self.quests_mislead[qm_i], self.quests[q_i])
-        return "{} now.".format(self.quests[q_i])
+        if not self.state["quest"]:
+            return "There is nothing to do."
+        if self.state["mislead"]:
+            return "{} now but {} now.".format(
+                self.text["mislead"][self.state["mislead"]],
+                self.text["quest"][self.state["quest"]])
+        return "{} now.".format(self.text["quest"][self.state["quest"]])
 
     def get_room_desc(self):
-        loc, loc_desc, _, _ = self.state
-        room = self.rooms[loc]
-        return self.descriptions[room][loc_desc]
+        return self.state["description"]
 
     def get_output(self):
         return self.get_room_desc() + " " + self.get_quest()
@@ -112,51 +190,51 @@ class HomeWorld2(object):
     def get_location(self):
         return self.rooms[self.state[0]]
 
-    def is_executable(self, action, obj):
-        loc = self.get_location()
-        if action == "go":
-            if obj not in self.moves: return False
-            return loc in [r1 for r1,r2 in self.moves[obj]]
-        elif action in self.quest_actions:
-            if obj not in self.env_objects: return False
-            l, a, _ = self.env_objects[obj]
-            return (loc == l) and (action == a)
-        else:
-            return False
+    def get_action(self,action):
+        return self.actions[action[0]] + " " + self.objects[action[1]]
+
+    def is_executable(self, conditions):
+        return all(self.state[f] == v for f,v in conditions.iteritems())
+
+    def is_movement(self,action):
+        a,o = action.split(" ")
+        return o not in self.env_objects
 
     def is_terminal(self):
-        return self.state[2] == -1
+        return not self.state["quest"]
 
-    def do(self, action, obj):
+    def do(self, a):
         """
         Action execution function: return next state and reward for executing action
         in current state
         """
         # check whether action does change the state - executability
-        if self.is_executable(action, obj):
-            if action == "go":
-                for (from_loc,to_loc) in self.moves[obj]:
-                    if self.get_location() == from_loc:
-                        self.state[0] = self.rooms.index(to_loc)
-                        self.state[1] = self.rng.randint(0,2)
-                        return self.get_output(), -0.01
-            else:
-                obj_desc = self.env_objects[obj][2]
-                r = 1 if self.quest_actions.index(action) == self.state[2] else -0.01
-                if r == 1: self.state[2] = -1
-                return obj_desc, r
+        if a in self.definitions:
+            for action in self.definitions[a]:
+                if not self.is_executable(action["conds"]): continue
+                for f,v in action["effs"].iteritems():
+                    self.state[f] = v
+                if self.is_movement(a):
+                    self.state["description"] = self.rng.choice(self.descriptions[self.state["room"]])
+                    return self.get_output(), -0.01
+                else:
+                    obj_desc = self.env_objects[a.split(" ")[1]]
+                    r = 1 if self.is_terminal() else -0.01
+                    return obj_desc, r
         # if not, return "Nothing happend." and same state description
-        else:
-            return "Nothing happend. " + self.get_output(), -0.1
+        return "Nothing happend. " + self.get_output(), -0.1
 
     def reset(self):
-        location = self.rng.randint(0,len(self.rooms)-1)
-        location_desc = self.rng.randint(0,2)
-        quest = self.rng.randint(0,len(self.quests)-1)
-        quest_mislead = self.rng.randint(0,len(self.quests)-1)
-        if quest_mislead == quest: quest_mislead = -1
+        location = self.rng.choice(self.rooms)
+        self.state["room"] = location
+        self.state["description"] = self.rng.choice(self.descriptions[location])
+        quest = self.rng.choice(self.quests)
+        quest_mislead = self.rng.choice(self.quests)
+        if quest_mislead == quest: quest_mislead = ""
 
-        self.state = [location, location_desc, quest, quest_mislead]
+        self.state["quest"] = quest
+        self.state["mislead"] = quest_mislead
+
         return self.get_output()
 
 
@@ -179,15 +257,13 @@ class HomeWorldEnv2(gym.Env):
         self.last_action = None
         self.last_state = None
 
-    def get_action_meanings(self):
-        return self.env.action_meanings
-
     def _step(self, action):
-        act,obj = self.env.actions[action[0]], self.env.objects[action[1]]
-        state, reward = self.env.do(act,obj)
+        #a = self.env.actions[action[0]] + " " + self.env.objects[action[1]]
+        action = self.env.get_action(action)
+        state, reward = self.env.do(action)
         terminal = self.env.is_terminal()
 
-        self.last_action = act + " " + obj
+        self.last_action = action
         self.last_state = state
 
         return state, reward, terminal, {}
@@ -213,13 +289,16 @@ class HomeWorldEnv2(gym.Env):
         return outfile
 
 if __name__ == "__main__":
+    import gym, gym_textgame
     env = gym.make("HomeWorldHard-v0")
     done = False
-
+    print env.action_space
     s = env.reset()
-    print s
+    i = 0
+    print "({})".format(i), s
     while not done:
+        i += 1
         a = env.action_space.sample()
         s, r, done, info = env.step(a)
-        print a, s
+        print "({})".format(i), a, s
     print "done!"
