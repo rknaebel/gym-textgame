@@ -13,17 +13,23 @@ import spacy
 #import logging
 #logger = logging.getLogger(__name__)
 
-#      ------------          ----------
-#      |living    |          |garden  |
-#Limbo-+   00     +----------+  01    |
-#      |          |          |        |
-#      -----+------          ----+-----
-#           |                    |
-#      -----+------          ----+-----
-#      |bedroom   |          |kitchen |
-#      |   03     +----------+  02    |
-#      |          |          |        |
-#      ------------          ----------
+#  -----+------         ------------          ----------
+#  |  hall    |         |living    |          |garden  |
+#  |   05     +---------+   00     +----------+  01    |
+#  |          |         |          |          |        |
+#  ------------         -----+------          ----+-----
+#                            |                    |
+#                       -----+------          ----+-----
+#                       |bedroom   |          |kitchen |
+#                       |   03     +----------+  02    |
+#                       |          |          |        |
+#                       ------------          ----+-----
+#                                                (/)
+#                                             ----+-----
+#                                             |pantry  |
+#                                             |  04    |
+#                                             |        |
+#                                             ----+-----
 
 class HomeWorld2(object):
     def __init__(self):
@@ -32,18 +38,23 @@ class HomeWorld2(object):
         # environment definition
         #
         self.descriptions = {
-            "living" : ["This room has a couch, chairs and TV.",
-                        "You have entered the living room. You can watch TV here.",
-                        "This room has two sofas, chairs and a chandelier."],
-            "garden" : ["This space has a swing, flowers and trees.",
-                        "You have arrived at the garden. You can exercise here.",
-                        "This area has plants, grass and rabbits."],
+            "living" :  ["This room has a couch, chairs and TV.",
+                         "You have entered the living room. You can watch TV here.",
+                         "This room has two sofas, chairs and a chandelier."],
+            "garden" :  ["This space has a swing, flowers and trees.",
+                         "You have arrived at the garden. You can exercise here.",
+                         "This area has plants, grass and rabbits."],
             "kitchen" : ["This room has a fridge, oven, and a sink.",
                          "You have arrived in the kitchen. You can find food and drinks here.",
                          "This living area has pizza, coke, and icecream."],
             "bedroom" : ["This area has a bed, desk and a dresser.",
                          "You have arrived in the bedroom. You can rest here.",
-                         "You see a wooden cot and a mattress on top of it."]
+                         "You see a wooden cot and a mattress on top of it."],
+            "pantry" :  ["A small room for storing food and other kinds of goods.",
+                         "This area is usually used for preparing cold foods.",
+                        ],
+            "hall" :    ["This seems to be the entrance room of the house.",
+                        ],
         }
 
         self.rooms = self.descriptions.keys()
@@ -52,68 +63,122 @@ class HomeWorld2(object):
             "tv" : "A huge television that is great for watching games.",
             "bike" : "A nice shiny bike that is fun to ride.",
             "apple" : "A red juicy fruit.",
+            "cheese" : "A good old emmentaler.",
+            "pizza" : "A delicious pizza margherita.",
             "bed" : "A nice, comfortable bed with pillows and sheets.",
             "rbutton" : "A red button.",
             "gbutton" : "A green button.",
             "bbutton" : "A blue button.",
             "key" : "A little key to open the locked room.",
+            "door" : "Looks like the door to another room.",
         }
 
         self.definitions = {
-            ("eat apple") : [{
-                "conds" : {"room":"kitchen", "quest":"hungry"},
-                "effs"    : {"quest":""}
+            ("eat apple") :  [{
+                "conds" :{"room":"kitchen", "quest":"hungry", "poisoned":"apple"},
+                "effs"  :{"dead":True}
+                },{
+                "conds" :{"room":"kitchen", "quest":"hungry","old":"apple"},
+                "effs"  :{"info":"The food does not seem good anymore."}
+                },{
+                "conds" :{"room":"kitchen", "quest":"hungry"},
+                "effs"  :{"quest":""}
+            }],
+            ("eat cheese") :  [{
+                "conds" :{"room":"kitchen", "quest":"hungry", "poisoned":"cheese"},
+                "effs"  :{"dead":True}
+                },{
+                "conds" :{"room":"kitchen", "quest":"hungry","old":"cheese"},
+                "effs"  :{"info":"The food does not seem good anymore."}
+                },{
+                "conds" :{"room":"kitchen", "quest":"hungry"},
+                "effs"  :{"quest":""}
+            }],
+            ("eat pizza") :  [{
+                "conds" :{"room":"kitchen", "quest":"hungry", "poisoned":"pizza"},
+                "effs"  :{"dead":True}
+                },{
+                "conds" :{"room":"kitchen", "quest":"hungry","old":"pizza"},
+                "effs"  :{"info":"The food does not seem good anymore."}
+                },{
+                "conds" :{"room":"kitchen", "quest":"hungry"},
+                "effs"  :{"quest":""}
             }],
             ("sleep bed") : [{
                 "conds" : {"room":"bedroom", "quest":"sleepy"},
                 "effs"    : {"quest":""}
             }],
             ("watch tv") : [{
-                "conds" : {"room":"living", "quest":"bored"},
+                "conds" : {"room":"living", "quest":"bored", "energy":True},
                 "effs"    : {"quest":""}
+                },{
+                "conds" : {"room":"living", "quest":"bored", "energy":False},
+                "effs"    : {"info":"Seems the tv does not work because of missing energy."}
             }],
             ("exercise bike") : [{
                 "conds" : {"room":"garden", "quest":"fat"},
                 "effs"    : {"quest":""}
             }],
             ("press rbutton") : [{
-                "conds" : {},
-                "effs"    : {}
+                "conds" :{"shock_btn":"rbutton"},
+                "effs"  :{"dead":True}
+                },{
+                "conds" :{"energy_btn":"rbutton"},
+                "effs"  :{"energy":True}
+                },{
+                "conds":{},
+                "effs" : {}
             }],
             ("press gbutton") : [{
-                "conds" : {},
-                "effs"    : {}
+                "conds" :{"shock_btn":"gbutton"},
+                "effs"  :{"dead":True}
+                },{
+                "conds" :{"energy_btn":"gbutton"},
+                "effs"  :{"energy":True}
+                },{
+                "conds":{},
+                "effs" : {}
             }],
             ("press bbutton") : [{
-                "conds" : {},
-                "effs"    : {}
+                "conds" :{"shock_btn":"bbutton"},
+                "effs"  :{"dead":True}
+                },{
+                "conds" :{"energy_btn":"bbutton"},
+                "effs"  :{"energy":True}
+                },{
+                "conds":{},
+                "effs" : {}
             }],
             ("get key") : [{
-                "conds" : {},
-                "effs"    : {}
-            }],
-            ("open door") : [{
-                "conds" : {},
-                "effs"    : {}
+                "conds":{"room":"hall", "has_key":False},
+                "effs"  :{"has_key":True}
+                },{
+                "conds":{"room":"hall", "has_key":True},
+                "effs" : {"info":"You already have the key."}
             }],
             #
             # Move in direction
             #
             ("go north") : [
                 {"conds":{"room":"bedroom"}, "effs":{"room":"living"}},
-                {"conds":{"room":"kitchen"}, "effs":{"room":"garden"}}
+                {"conds":{"room":"kitchen"}, "effs":{"room":"garden"}},
+                {"conds":{"room":"pantry"}, "effs":{"room":"kitchen"}},
             ],
             ("go south") : [
                 {"conds":{"room":"living"}, "effs":{"room":"bedroom"}},
-                {"conds":{"room":"garden"}, "effs":{"room":"kitchen"}}
+                {"conds":{"room":"garden"}, "effs":{"room":"kitchen"}},
+                {"conds":{"room":"kitchen"}, "effs":{"room":"pantry"}},
+
             ],
             ("go east") : [
                 {"conds":{"room":"living"}, "effs":{"room":"garden"}},
-                {"conds":{"room":"bedroom"}, "effs":{"room":"kitchen"}}
+                {"conds":{"room":"bedroom"}, "effs":{"room":"kitchen"}},
+                {"conds":{"room":"hall"}, "effs":{"room":"living"}},
             ],
             ("go west") : [
                 {"conds":{"room":"garden"}, "effs":{"room":"living"}},
-                {"conds":{"room":"kitchen"}, "effs":{"room":"bedroom"}}
+                {"conds":{"room":"kitchen"}, "effs":{"room":"bedroom"}},
+                {"conds":{"room":"living"}, "effs":{"room":"hall"}},
             ],
         }
 
@@ -129,7 +194,7 @@ class HomeWorld2(object):
                 "sleepy" : "You are not sleepy",
                 "bored"  : "You are not bored",
                 "fat"    : "You are not getting fat",
-            }
+            },
         }
 
         self.actions = list({a.split(" ")[0] for a in self.definitions})
@@ -145,12 +210,17 @@ class HomeWorld2(object):
         self.state = {
             "room" : "",
             "description" : "",
+            "info" : "",
             "quest" : "",
             "mislead" : "",
             "has_key" : "",
-            "old_food" : "",
+            "old" : "",
             "poisoned" : "",
-            "broken" : "",
+            "energy" : "",
+            "locked_bike" : "",
+            "shock_btn" : "",
+            "energy_btn" : "",
+            "dead" : False
         }
 
         self.init_vocab()
@@ -185,7 +255,15 @@ class HomeWorld2(object):
         return self.state["description"]
 
     def get_output(self):
-        return self.get_room_desc() + " " + self.get_quest()
+        # generate info message
+        info = ""
+        # get room description
+        room = self.get_room_desc()
+        # get quest description
+        quest = self.get_quest()
+        output = [info, room, quest]
+        self.rng.shuffle(output)
+        return " ".join(output)
 
     def get_location(self):
         return self.rooms[self.state[0]]
