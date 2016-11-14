@@ -24,7 +24,7 @@ import spacy
 #                       |   03     +----------+  02    |
 #                       |          |          |        |
 #                       ------------          ----+-----
-#                                                (/)
+#                                                 |
 #                                             ----+-----
 #                                             |pantry  |
 #                                             |  04    |
@@ -79,7 +79,7 @@ class HomeWorld2(object):
                 "effs"  :{"dead":True}
                 },{
                 "conds" :{"room":"kitchen", "quest":"hungry","old":"apple"},
-                "effs"  :{"info":"The food does not seem good anymore."}
+                "effs"  :{"info":"old_food"}
                 },{
                 "conds" :{"room":"kitchen", "quest":"hungry"},
                 "effs"  :{"quest":""}
@@ -89,7 +89,7 @@ class HomeWorld2(object):
                 "effs"  :{"dead":True}
                 },{
                 "conds" :{"room":"kitchen", "quest":"hungry","old":"cheese"},
-                "effs"  :{"info":"The food does not seem good anymore."}
+                "effs"  :{"info":"old_food"}
                 },{
                 "conds" :{"room":"kitchen", "quest":"hungry"},
                 "effs"  :{"quest":""}
@@ -99,7 +99,7 @@ class HomeWorld2(object):
                 "effs"  :{"dead":True}
                 },{
                 "conds" :{"room":"kitchen", "quest":"hungry","old":"pizza"},
-                "effs"  :{"info":"The food does not seem good anymore."}
+                "effs"  :{"info":"old_food"}
                 },{
                 "conds" :{"room":"kitchen", "quest":"hungry"},
                 "effs"  :{"quest":""}
@@ -113,38 +113,38 @@ class HomeWorld2(object):
                 "effs"    : {"quest":""}
                 },{
                 "conds" : {"room":"living", "quest":"bored", "energy":False},
-                "effs"    : {"info":"Seems the tv does not work because of missing energy."}
+                "effs"    : {"info":"energy_error"}
             }],
             ("exercise bike") : [{
                 "conds" : {"room":"garden", "quest":"fat"},
                 "effs"    : {"quest":""}
             }],
             ("press rbutton") : [{
-                "conds" :{"shock_btn":"rbutton"},
-                "effs"  :{"dead":True}
-                },{
                 "conds" :{"energy_btn":"rbutton"},
                 "effs"  :{"energy":True}
+                },{
+                "conds" :{"shock_btn":"rbutton"},
+                "effs"  :{"dead":True}
                 },{
                 "conds":{},
                 "effs" : {}
             }],
             ("press gbutton") : [{
-                "conds" :{"shock_btn":"gbutton"},
-                "effs"  :{"dead":True}
-                },{
                 "conds" :{"energy_btn":"gbutton"},
                 "effs"  :{"energy":True}
+                },{
+                "conds" :{"shock_btn":"gbutton"},
+                "effs"  :{"dead":True}
                 },{
                 "conds":{},
                 "effs" : {}
             }],
             ("press bbutton") : [{
-                "conds" :{"shock_btn":"bbutton"},
-                "effs"  :{"dead":True}
-                },{
                 "conds" :{"energy_btn":"bbutton"},
                 "effs"  :{"energy":True}
+                },{
+                "conds" :{"shock_btn":"bbutton"},
+                "effs"  :{"dead":True}
                 },{
                 "conds":{},
                 "effs" : {}
@@ -154,7 +154,7 @@ class HomeWorld2(object):
                 "effs"  :{"has_key":True}
                 },{
                 "conds":{"room":"hall", "has_key":True},
-                "effs" : {"info":"You already have the key."}
+                "effs" : {"info":"has_key"}
             }],
             #
             # Move in direction
@@ -195,6 +195,13 @@ class HomeWorld2(object):
                 "bored"  : "You are not bored",
                 "fat"    : "You are not getting fat",
             },
+            "info" : {
+                "has_key" : "You already have the key.",
+                "energy_error" : "Seems the tv does not work because of missing energy. Press the {} in the pantry.",
+                "bike_error" : "Seems the bike is locked. You can find the key at {}",
+                "old_food" : "The food does not seem good anymore.",
+                "food_warning" : "You cannot enjoy the {} anymore, it is old! Attention: do not eat the poisend {}",
+            }
         }
 
         self.actions = list({a.split(" ")[0] for a in self.definitions})
@@ -257,6 +264,17 @@ class HomeWorld2(object):
     def get_output(self):
         # generate info message
         info = ""
+        if self.state["info"] == "has_key":
+            info = self.text["info"]["has_key"]
+        elif self.state["info"] == "energy_error":
+            info = self.text["info"]["energy_error"].format(self.state["energy_btn"])
+        elif self.state["info"] == "bike_error":
+            info = self.text["info"]["bike_error"].format(self.state["bike_key"])
+        elif self.state["info"] == "old_food":
+            info = self.text["info"]["old_food"]
+        elif self.state["info"] == "food_warning":
+            info = self.text["info"]["food_warning"].format(self.state["old"],self.state["poisend"])
+
         # get room description
         room = self.get_room_desc()
         # get quest description
@@ -312,6 +330,13 @@ class HomeWorld2(object):
 
         self.state["quest"] = quest
         self.state["mislead"] = quest_mislead
+        self.state["poisoned"] = self.rng.choice(["apple", "cheese", "pizza"])
+        self.state["old"] = self.rng.choice(["apple", "cheese", "pizza"])
+        self.state["energy"] = (self.rng.random() < 0.5)
+        self.state["locked_bike"] = (self.rng.random() < 0.5)
+        self.state["bike_key"] = self.rng.choice(self.rooms)
+        self.state["energy_btn"] = self.rng.choice(["rbutton", "gbutton", "bbutton"])
+        self.state["shock_btn"] = self.rng.choice(["rbutton", "gbutton", "bbutton"])
 
         return self.get_output()
 
