@@ -116,9 +116,12 @@ class HomeWorld2(object):
                 "effs"    : {"info":"energy_error"}
             }],
             ("exercise bike") : [{
-                "conds" : {"room":"garden", "quest":"fat"},
+                "conds" : {"room":"garden", "quest":"fat", "locked_bike":False},
                 "effs"    : {"quest":""}
-            }],
+                },{
+                "conds" : {"room":"garden", "quest":"fat", "locked_bike":True},
+                "effs"    : {"info":"bike_error"}
+                }],
             ("press rbutton") : [{
                 "conds" :{"energy_btn":"rbutton"},
                 "effs"  :{"energy":True}
@@ -274,6 +277,7 @@ class HomeWorld2(object):
             info = self.text["info"]["old_food"]
         elif self.state["info"] == "food_warning":
             info = self.text["info"]["food_warning"].format(self.state["old"],self.state["poisend"])
+        self.state["info"] = ""
 
         # get room description
         room = self.get_room_desc()
