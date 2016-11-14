@@ -119,9 +119,12 @@ class HomeWorld2(object):
                 "conds" : {"room":"garden", "quest":"fat", "locked_bike":False},
                 "effs"    : {"quest":""}
                 },{
+                "conds" : {"room":"garden", "quest":"fat", "locked_bike":True, "has_key":True},
+                "effs"    : {"quest":""}
+                },{
                 "conds" : {"room":"garden", "quest":"fat", "locked_bike":True},
                 "effs"    : {"info":"bike_error"}
-                }],
+            }],
             ("press rbutton") : [{
                 "conds" :{"energy_btn":"rbutton"},
                 "effs"  :{"energy":True}
@@ -301,7 +304,9 @@ class HomeWorld2(object):
         return o not in self.env_objects
 
     def is_terminal(self):
-        return not self.state["quest"]
+        return (not self.state["quest"]) or self.state["dead"]
+
+    
 
     def do(self, a):
         """
@@ -399,11 +404,13 @@ if __name__ == "__main__":
     import gym, gym_textgame
     env = gym.make("HomeWorldHard-v0")
     done = False
+    states = []
     print env.action_space
     s = env.reset()
     i = 0
     print "({})".format(i), s
     while not done:
+        states.append(s)
         i += 1
         a = env.action_space.sample()
         s, r, done, info = env.step(a)
