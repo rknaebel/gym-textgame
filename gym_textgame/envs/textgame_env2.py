@@ -61,20 +61,16 @@ class HomeWorld2(object):
 
         self.env_objects = {
             "tv" : "A huge television that is great for watching games.",
-#            "bike" : "A nice shiny bike that is fun to ride.",
             "apple" : "A red juicy fruit.",
             "cheese" : "A good old emmentaler.",
             "pizza" : "A delicious pizza margherita.",
-#            "bed" : "A nice, comfortable bed with pillows and sheets.",
             "rbutton" : "A red button.",
             "gbutton" : "A green button.",
             "bbutton" : "A blue button.",
-            "ingredient1" : "A red fluid",
-            "ingredient2" : "A green fluid",
-            "ingredient3" : "A blue fluid",
-            "recipe_book" : "",
-#            "key" : "A little key to open the locked room.",
-#            "door" : "Looks like the door to another room.",
+            "12" : "A red fluid",
+            "13" : "A blue fluid",
+            "23" : "A green fluid",
+            "recipe_book" : "A book full of recipies.",
         }
 
         self.definitions = {
@@ -220,13 +216,13 @@ class HomeWorld2(object):
             "info" : {
                 "energy_error" : "Seems the tv does not work because of missing energy. Press the {} in the pantry.",
                 "old_food" : "The food does not seem good anymore.",
-                "food_warning" : "You cannot enjoy the {} anymore, it is old! Attention: do not eat the poisend {}",
+                "food_warning" : "You cannot enjoy the {} anymore, it is old! Attention: do not eat the poisoned {}.",
                 "recipe_wrong" : "The recipe seems to have the wrong effect."
             },
             "recipies" : {
-                0: "To get {0} you should mix {1} and {2}.",
-                1: "Recipe for being {0}: First take {1}, then {2} and at the end mix both ingredients.",
-                2: "Take both, {1} and {2}, to get {0}.",
+                0: "To get {0} you should mix drink{1} and drink{2}.",
+                1: "Recipe {0}: First take drink{1}, then drink{2} and mix them.",
+                2: "Take drink{1} and drink{2}, to get {0}.",
             }
         }
 
@@ -246,7 +242,6 @@ class HomeWorld2(object):
             "info" : "",
             "quest" : "",
             "mislead" : "",
-            "success":True,
             "old" : "",
             "poisoned" : "",
             "energy" : "",
@@ -293,7 +288,7 @@ class HomeWorld2(object):
     def get_room_desc(self):
         return self.state["description"]
 
-    def get_output(self):
+    def get_info_msg(self):
         # generate info message
         info = ""
         if self.state["info"] == "recipe_info":
@@ -305,15 +300,19 @@ class HomeWorld2(object):
             info = self.text["info"]["energy_error"].format(self.state["energy_btn"])
         elif self.state["info"] == "old_food":
             info = self.text["info"]["old_food"]
-        elif self.state["info"] == "food_warning":
-            info = self.text["info"]["food_warning"].format(self.state["old"],self.state["poisend"])
+        elif self.state["room"] == "hall":
+            info = self.text["info"]["food_warning"].format(self.state["old"],self.state["poisoned"])
         self.state["info"] = ""
+        return info
 
+    def get_output(self):
         # get room description
         room = self.get_room_desc()
+        if self.state["room"] == "hall":
+            room = room + " " + self.text["info"]["food_warning"].format(self.state["old"],self.state["poisoned"])
         # get quest description
         quest = self.get_quest()
-        output = [info, room, quest]
+        output = [room, quest]
         # shuffle the output for increasing states!
         #self.rng.shuffle(output)
         return " ".join(output)
@@ -354,9 +353,19 @@ class HomeWorld2(object):
                     self.state["description"] = self.rng.choice(self.descriptions[self.state["room"]])
                     return self.get_output(), -0.01
                 else:
-                    obj_desc = self.env_objects[a.split(" ")[1]]
-                    r = 1 if self.is_terminal() else -0.01
-                    return obj_desc, r
+                    obj = a.split(" ")[1]
+                    out = self.env_objects[obj]
+                    if self.state["info"]:
+                        out = out + " " + self.get_info_msg()
+                    if self.is_terminal():
+                        if self.is_successful():
+                            r = 1
+                        else:
+                            r = -10
+                    else:
+                        r = -0.01
+                    #r = 1 if self.is_terminal() else -0.01
+                    return out, r
         # if not, return "Nothing happend." and same state description
         return "Nothing happend. " + self.get_output(), -0.1
 
@@ -464,5 +473,5 @@ if __name__ == "__main__":
         a = env.action_space.sample()
         s, r, done, info = env.step(a)
         print "({}) {} {}".format(i, env.env.get_action(a), s)
-    print "done!"
+    print "done!", r
     print env.env.state
