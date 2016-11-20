@@ -299,7 +299,7 @@ class HomeWorld2(object):
         if self.state["info"] == "recipe_info":
             msgs = self.permutation(self.text["recipies"].values())
             results = self.permutation(self.state["recipies"].items())
-            for s,i in zip(env.permutation(env.text["recipies"].values()),env.state["recipies"].items()):
+            for s,i in zip(self.permutation(self.text["recipies"].values()),self.state["recipies"].items()):
                 info += s.format(i[0],i[1][0],i[1][1])
         elif self.state["info"] == "energy_error":
             info = self.text["info"]["energy_error"].format(self.state["energy_btn"])
@@ -342,6 +342,8 @@ class HomeWorld2(object):
         Action execution function: return next state and reward for executing action
         in current state
         """
+        if self.state["dead"]:
+            return "You are dead, idiot!", 0
         # check whether action does change the state - executability
         if a in self.definitions:
             for action in self.definitions[a]:
@@ -362,16 +364,22 @@ class HomeWorld2(object):
         location = self.rng.choice(self.rooms)
         self.state["room"] = location
         self.state["description"] = self.rng.choice(self.descriptions[location])
-        quest = self.rng.choice(self.quests)
-        quest_mislead = self.rng.choice(self.quests)
-        if quest_mislead == quest: quest_mislead = ""
 
-        self.state["quest"] = quest
-        self.state["mislead"] = quest_mislead
+        quests = self.permutation(self.quests)
+        #quest = self.rng.choice(self.quests)
+        #quest_mislead = self.rng.choice(self.quests)
+        #if quest_mislead == quest: quest_mislead = ""
+
+        #self.state["quest"] = quest
+        #self.state["mislead"] = quest_mislead
+        self.state["quest"] = quests[0]
+        self.state["mislead"] = quests[1]
+
+
         foods = self.permutation(["apple", "cheese", "pizza"])
         self.state["old"] = foods[1]
         self.state["poisoned"] = foods[2]
-        self.state["energy"] = (self.rng.random() < 0.5)
+        self.state["energy"] = False #(self.rng.random() < 0.5)
 
         recipe = self.permutation(["12", "23", "13"])
         self.state["recipe_good"] = recipe[0]
@@ -455,5 +463,6 @@ if __name__ == "__main__":
         i += 1
         a = env.action_space.sample()
         s, r, done, info = env.step(a)
-        print "({})".format(i), a, s
+        print "({}) {} {}".format(i, env.env.get_action(a), s)
     print "done!"
+    print env.env.state
