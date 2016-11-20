@@ -61,16 +61,20 @@ class HomeWorld2(object):
 
         self.env_objects = {
             "tv" : "A huge television that is great for watching games.",
-            "bike" : "A nice shiny bike that is fun to ride.",
+#            "bike" : "A nice shiny bike that is fun to ride.",
             "apple" : "A red juicy fruit.",
             "cheese" : "A good old emmentaler.",
             "pizza" : "A delicious pizza margherita.",
-            "bed" : "A nice, comfortable bed with pillows and sheets.",
+#            "bed" : "A nice, comfortable bed with pillows and sheets.",
             "rbutton" : "A red button.",
             "gbutton" : "A green button.",
             "bbutton" : "A blue button.",
-            "key" : "A little key to open the locked room.",
-            "door" : "Looks like the door to another room.",
+            "ingredient1" : "A red fluid",
+            "ingredient2" : "A green fluid",
+            "ingredient3" : "A blue fluid",
+            "recipe_book" : "",
+#            "key" : "A little key to open the locked room.",
+#            "door" : "Looks like the door to another room.",
         }
 
         self.definitions = {
@@ -104,10 +108,6 @@ class HomeWorld2(object):
                 "conds" :{"room":"kitchen", "quest":"hungry"},
                 "effs"  :{"quest":""}
             }],
-            ("sleep bed") : [{
-                "conds" : {"room":"bedroom", "quest":"sleepy"},
-                "effs"    : {"quest":""}
-            }],
             ("watch tv") : [{
                 "conds" : {"room":"living", "quest":"bored", "energy":True},
                 "effs"    : {"quest":""}
@@ -115,52 +115,69 @@ class HomeWorld2(object):
                 "conds" : {"room":"living", "quest":"bored", "energy":False},
                 "effs"    : {"info":"energy_error"}
             }],
-            ("exercise bike") : [{
-                "conds" : {"room":"garden", "quest":"fat", "locked_bike":False},
-                "effs"    : {"quest":""}
-                },{
-                "conds" : {"room":"garden", "quest":"fat", "locked_bike":True, "has_key":True},
-                "effs"    : {"quest":""}
-                },{
-                "conds" : {"room":"garden", "quest":"fat", "locked_bike":True},
-                "effs"    : {"info":"bike_error"}
-            }],
             ("press rbutton") : [{
-                "conds" :{"energy_btn":"rbutton"},
+                "conds" :{"room":"pantry", "energy_btn":"rbutton"},
                 "effs"  :{"energy":True}
                 },{
-                "conds" :{"shock_btn":"rbutton"},
+                "conds" :{"room":"pantry", "shock_btn":"rbutton"},
                 "effs"  :{"dead":True}
                 },{
-                "conds":{},
+                "conds":{"room":"pantry"},
                 "effs" : {}
             }],
             ("press gbutton") : [{
-                "conds" :{"energy_btn":"gbutton"},
+                "conds" :{"room":"pantry", "energy_btn":"gbutton"},
                 "effs"  :{"energy":True}
                 },{
-                "conds" :{"shock_btn":"gbutton"},
+                "conds" :{"room":"pantry", "shock_btn":"gbutton"},
                 "effs"  :{"dead":True}
                 },{
-                "conds":{},
+                "conds":{"room":"pantry"},
                 "effs" : {}
             }],
             ("press bbutton") : [{
-                "conds" :{"energy_btn":"bbutton"},
+                "conds" :{"room":"pantry", "energy_btn":"bbutton"},
                 "effs"  :{"energy":True}
                 },{
-                "conds" :{"shock_btn":"bbutton"},
-                "effs"  :{"dead":True}
+                "conds" :{"room":"pantry", "shock_btn":"bbutton"},
+                "effs"  :{"quest":"", "success":False}
                 },{
-                "conds":{},
+                "conds":{"room":"pantry"},
                 "effs" : {}
             }],
-            ("get key") : [{
-                "conds":{"room":"hall", "has_key":False},
-                "effs"  :{"has_key":True}
+            ("read recipe_book") : [{
+                "conds" :{"room":"garden",},
+                "effs"  :{"info":"recipe_info"}
+            }],
+            ("mix 12") : [{
+                "conds":{"room":"bedroom", "quest":"sleepy", "recipe_good":"12"},
+                "effs"  :{"quest":""}
                 },{
-                "conds":{"room":"hall", "has_key":True},
-                "effs" : {"info":"has_key"}
+                "conds":{"room":"bedroom", "recipe_bad":"12"},
+                "effs" : {"quest":"", "success":False}
+                },{
+                "conds":{"room":"bedroom"},
+                "effs" : {"info":"recipe_wrong"}
+            }],
+            ("mix 13") : [{
+                "conds":{"room":"bedroom", "quest":"sleepy", "recipe_good":"13"},
+                "effs"  :{"quest":""}
+                },{
+                "conds":{"room":"bedroom", "recipe_bad":"13"},
+                "effs" : {"quest":"", "success":False}
+                },{
+                "conds":{"room":"bedroom"},
+                "effs" : {"info":"recipe_wrong"}
+            }],
+            ("mix 23") : [{
+                "conds":{"room":"bedroom", "quest":"sleepy", "recipe_good":"23"},
+                "effs"  :{"quest":""}
+                },{
+                "conds":{"room":"bedroom", "recipe_bad":"23"},
+                "effs" : {"quest":"", "success":False}
+                },{
+                "conds":{"room":"bedroom"},
+                "effs" : {"info":"recipe_wrong"}
             }],
             #
             # Move in direction
@@ -174,7 +191,6 @@ class HomeWorld2(object):
                 {"conds":{"room":"living"}, "effs":{"room":"bedroom"}},
                 {"conds":{"room":"garden"}, "effs":{"room":"kitchen"}},
                 {"conds":{"room":"kitchen"}, "effs":{"room":"pantry"}},
-
             ],
             ("go east") : [
                 {"conds":{"room":"living"}, "effs":{"room":"garden"}},
@@ -202,11 +218,15 @@ class HomeWorld2(object):
                 "fat"    : "You are not getting fat",
             },
             "info" : {
-                "has_key" : "You already have the key.",
                 "energy_error" : "Seems the tv does not work because of missing energy. Press the {} in the pantry.",
-                "bike_error" : "Seems the bike is locked. You can find the key at {}",
                 "old_food" : "The food does not seem good anymore.",
                 "food_warning" : "You cannot enjoy the {} anymore, it is old! Attention: do not eat the poisend {}",
+                "recipe_wrong" : "The recipe seems to have the wrong effect."
+            },
+            "recipies" : {
+                0: "To get {0} you should mix {1} and {2}.",
+                1: "Recipe for being {0}: First take {1}, then {2} and at the end mix both ingredients.",
+                2: "Take both, {1} and {2}, to get {0}.",
             }
         }
 
@@ -216,8 +236,8 @@ class HomeWorld2(object):
         self.num_actions = len(self.actions)
         self.num_objects = len(self.objects)
 
-        self.quests = ['hungry','sleepy', 'bored', 'fat']
-        self.quest_actions = ['eat', 'sleep', 'watch' ,'exercise']
+        self.quests = ['hungry','sleepy', 'bored']
+        self.quest_actions = ['eat', 'sleep', 'watch']
         self.extra_vocab = ['nothing', 'happend', 'not', 'but', 'now']
 
         self.state = {
@@ -226,13 +246,16 @@ class HomeWorld2(object):
             "info" : "",
             "quest" : "",
             "mislead" : "",
-            "has_key" : "",
+            "success":True,
+#            "has_key" : "",
             "old" : "",
             "poisoned" : "",
             "energy" : "",
-            "locked_bike" : "",
+#            "locked_bike" : "",
             "shock_btn" : "",
             "energy_btn" : "",
+            "recipe_good" : "",
+            "recipe_bad" : "",
             "dead" : False
         }
 
@@ -242,8 +265,13 @@ class HomeWorld2(object):
     def set_seed(self, seed):
         self.rng = random.Random(seed)
 
+    def permutation(self,xs):
+        lst = xs[:]
+        self.rng.shuffle(lst)
+        return lst
+
     def init_vocab(self):
-        words = u" ".join(   [d for ds in self.descriptions.values() for d in ds] +
+        words = u" ".join(  [d for ds in self.descriptions.values() for d in ds] +
                             self.env_objects.values() +
                             [t for k,v in self.text.iteritems() for t in v.values()] +
                             self.extra_vocab
@@ -270,12 +298,13 @@ class HomeWorld2(object):
     def get_output(self):
         # generate info message
         info = ""
-        if self.state["info"] == "has_key":
-            info = self.text["info"]["has_key"]
+        if self.state["info"] == "recipe_info":
+            msgs = self.permutation(self.text["recipies"].values())
+            results = self.permutation(self.state["recipies"].items())
+            for s,i in zip(env.permutation(env.text["recipies"].values()),env.state["recipies"].items()):
+                info += s.format(i[0],i[1][0],i[1][1])
         elif self.state["info"] == "energy_error":
             info = self.text["info"]["energy_error"].format(self.state["energy_btn"])
-        elif self.state["info"] == "bike_error":
-            info = self.text["info"]["bike_error"].format(self.state["bike_key"])
         elif self.state["info"] == "old_food":
             info = self.text["info"]["old_food"]
         elif self.state["info"] == "food_warning":
@@ -287,7 +316,8 @@ class HomeWorld2(object):
         # get quest description
         quest = self.get_quest()
         output = [info, room, quest]
-        self.rng.shuffle(output)
+        # shuffle the output for increasing states!
+        #self.rng.shuffle(output)
         return " ".join(output)
 
     def get_location(self):
@@ -306,7 +336,8 @@ class HomeWorld2(object):
     def is_terminal(self):
         return (not self.state["quest"]) or self.state["dead"]
 
-    
+    def is_successful(self):
+        return self.is_terminal() and not self.state["dead"]
 
     def do(self, a):
         """
@@ -339,13 +370,24 @@ class HomeWorld2(object):
 
         self.state["quest"] = quest
         self.state["mislead"] = quest_mislead
-        self.state["poisoned"] = self.rng.choice(["apple", "cheese", "pizza"])
-        self.state["old"] = self.rng.choice(["apple", "cheese", "pizza"])
+        foods = self.permutation(["apple", "cheese", "pizza"])
+        self.state["old"] = foods[1]
+        self.state["poisoned"] = foods[2]
         self.state["energy"] = (self.rng.random() < 0.5)
-        self.state["locked_bike"] = (self.rng.random() < 0.5)
-        self.state["bike_key"] = self.rng.choice(self.rooms)
-        self.state["energy_btn"] = self.rng.choice(["rbutton", "gbutton", "bbutton"])
-        self.state["shock_btn"] = self.rng.choice(["rbutton", "gbutton", "bbutton"])
+
+        recipe = self.permutation(["12", "23", "13"])
+        self.state["recipe_good"] = recipe[0]
+        self.state["recipe_bad"] = recipe[2]
+        self.state["recipies"] = {
+            "great":recipe[0],
+            "mediocre":recipe[1],
+            "bad":recipe[2],
+        }
+
+        buttons = self.permutation(["rbutton", "gbutton", "bbutton"])
+        self.state["energy_btn"] = buttons[0]
+        self.state["shock_btn"] = buttons[1]
+
 
         return self.get_output()
 
