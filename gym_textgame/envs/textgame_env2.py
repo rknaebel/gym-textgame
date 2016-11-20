@@ -154,7 +154,7 @@ class HomeWorld2(object):
                 "effs"  :{"quest":""}
                 },{
                 "conds":{"room":"bedroom", "recipe_bad":"12"},
-                "effs" : {"quest":"", "success":False}
+                "effs" : {"quest":"", "dead":True}
                 },{
                 "conds":{"room":"bedroom"},
                 "effs" : {"info":"recipe_wrong"}
@@ -164,7 +164,7 @@ class HomeWorld2(object):
                 "effs"  :{"quest":""}
                 },{
                 "conds":{"room":"bedroom", "recipe_bad":"13"},
-                "effs" : {"quest":"", "success":False}
+                "effs" : {"quest":"", "dead":True}
                 },{
                 "conds":{"room":"bedroom"},
                 "effs" : {"info":"recipe_wrong"}
@@ -174,7 +174,7 @@ class HomeWorld2(object):
                 "effs"  :{"quest":""}
                 },{
                 "conds":{"room":"bedroom", "recipe_bad":"23"},
-                "effs" : {"quest":"", "success":False}
+                "effs" : {"quest":"", "dead":True}
                 },{
                 "conds":{"room":"bedroom"},
                 "effs" : {"info":"recipe_wrong"}

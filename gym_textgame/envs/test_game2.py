@@ -72,3 +72,22 @@ env.state["poisoned"] = "apple"
 env.do("eat apple")
 assert env.state["quest"] == "hungry"
 assert env.state["dead"] == True
+
+env.reset()
+env.state["quest"] = "hungry"
+env.state["room"] = "kitchen"
+env.state["poisoned"] = "pizza"
+env.state["old"] = "apple"
+env.do("eat apple")
+assert env.state["quest"] == "hungry"
+assert env.state["info"] == "old_food"
+assert env.state["dead"] == False
+
+env.reset()
+env.state["quest"] = "hungry"
+env.state["room"] = "kitchen"
+env.state["poisoned"] = "cheese"
+env.state["old"] = "pizza"
+env.do("eat apple")
+assert env.state["quest"] == ""
+assert env.state["dead"] == False
