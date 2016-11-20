@@ -247,11 +247,9 @@ class HomeWorld2(object):
             "quest" : "",
             "mislead" : "",
             "success":True,
-#            "has_key" : "",
             "old" : "",
             "poisoned" : "",
             "energy" : "",
-#            "locked_bike" : "",
             "shock_btn" : "",
             "energy_btn" : "",
             "recipe_good" : "",
@@ -388,6 +386,7 @@ class HomeWorld2(object):
         self.state["energy_btn"] = buttons[0]
         self.state["shock_btn"] = buttons[1]
 
+        self.state["dead"] = False
 
         return self.get_output()
 
