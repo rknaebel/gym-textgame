@@ -361,7 +361,7 @@ class HomeWorld2(object):
                         if self.is_successful():
                             r = 1
                         else:
-                            r = -10
+                            r = -1
                     else:
                         r = -0.01
                     #r = 1 if self.is_terminal() else -0.01
@@ -458,7 +458,7 @@ class HomeWorldEnv2(gym.Env):
         time.sleep(0.5)
         return outfile
 
-if __name__ == "__main__":
+def main():
     import gym, gym_textgame
     env = gym.make("HomeWorldHard-v0")
     done = False
@@ -475,3 +475,25 @@ if __name__ == "__main__":
         print "({}) {} {}".format(i, env.env.get_action(a), s)
     print "done!", r
     print env.env.state
+
+def test():
+    env = HomeWorld2()
+    done = False
+    print env.reset()
+    while not done:
+        action = raw_input(">> ")
+        if action == "help":
+            print env.definitions.keys()
+            continue
+        else:
+            state, reward = env.do(action)
+            done = env.is_terminal()
+            print state
+    print "you are done!"
+    if env.is_successful():
+        print "congrats!"
+    else:
+        print "sorry dude, you are dead..."
+
+if __name__ == "__main__":
+    test()
