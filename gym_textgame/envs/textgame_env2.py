@@ -67,9 +67,9 @@ class HomeWorld2(object):
             "rbutton" : "A red button.",
             "gbutton" : "A green button.",
             "bbutton" : "A blue button.",
-            "drink1" : "A red fluid",
-            "drink2" : "A blue fluid",
-            "drink3" : "A green fluid",
+            "red" : "A red fluid",
+            "green" : "A green fluid",
+            "blue" : "A blue fluid",
             "recipe_book" : "A book full of recipies.",
         }
 
@@ -148,38 +148,38 @@ class HomeWorld2(object):
             #
             # Ingredients
             #
-            ("read drink1") : [{
+            ("read red") : [{
                 "conds":{"room":"bedroom"},
                 "effs"  :{}
             }],
-            ("read drink2") : [{
+            ("read green") : [{
                 "conds":{"room":"bedroom"},
                 "effs"  :{}
             }],
-            ("read drink3") : [{
+            ("read blue") : [{
                 "conds":{"room":"bedroom"},
                 "effs"  :{}
             }],
             ####################################################################
-            ("drink drink1") : [{
-                "conds":{"room":"bedroom", "quest":"sleepy", "recipe_good":"1"},
+            ("drink red") : [{
+                "conds":{"room":"bedroom", "quest":"sleepy", "recipe_good":"red"},
                 "effs"  :{"quest":""}
                 },{
-                "conds":{"room":"bedroom", "recipe_bad":"1"},
+                "conds":{"room":"bedroom", "recipe_bad":"red"},
                 "effs" : {"quest":"", "dead":True}
             }],
-            ("drink drink2") : [{
-                "conds":{"room":"bedroom", "quest":"sleepy", "recipe_good":"2"},
+            ("drink green") : [{
+                "conds":{"room":"bedroom", "quest":"sleepy", "recipe_good":"green"},
                 "effs"  :{"quest":""}
                 },{
-                "conds":{"room":"bedroom", "recipe_bad":"2"},
+                "conds":{"room":"bedroom", "recipe_bad":"green"},
                 "effs" : {"quest":"", "dead":True}
             }],
-            ("drink drink3") : [{
-                "conds":{"room":"bedroom", "quest":"sleepy", "recipe_good":"3"},
+            ("drink blue") : [{
+                "conds":{"room":"bedroom", "quest":"sleepy", "recipe_good":"blue"},
                 "effs"  :{"quest":""}
                 },{
-                "conds":{"room":"bedroom", "recipe_bad":"3"},
+                "conds":{"room":"bedroom", "recipe_bad":"blue"},
                 "effs" : {"quest":"", "dead":True}
             }],
             #
@@ -227,9 +227,9 @@ class HomeWorld2(object):
                 "recipe_wrong" : "The recipe seems to have the wrong effect."
             },
             "recipies" : {
-                0: "To get {0} you should take drink{1}.",
-                1: "Effect of {0}: One needs to use drink{1}.",
-                2: "Take drink{1} to get {0}.",
+                0: "To get {0} you should take the {1} drink.",
+                1: "Effect {0}: One needs to use a {1} sweet drink.",
+                2: "Take a drink which is {1} to get {0}.",
             }
         }
 
@@ -302,7 +302,7 @@ class HomeWorld2(object):
             msgs = self.permutation(self.text["recipies"].values())
             results = self.permutation(self.state["recipies"].items())
             for s,i in zip(self.permutation(self.text["recipies"].values()),self.state["recipies"].items()):
-                info += s.format(i[0],i[1])
+                info += s.format(i[0],i[1]) + " "
         elif self.state["info"] == "energy_error":
             info = self.text["info"]["energy_error"].format(self.state["energy_btn"])
         elif self.state["info"] == "old_food":
@@ -397,7 +397,7 @@ class HomeWorld2(object):
         self.state["poisoned"] = foods[2]
         self.state["energy"] = False #(self.rng.random() < 0.5)
 
-        recipe = self.permutation(["1", "2", "3"])
+        recipe = self.permutation(["red", "green", "blue"])
         self.state["recipe_good"] = recipe[0]
         self.state["recipe_bad"] = recipe[2]
         self.state["recipies"] = {
@@ -491,6 +491,9 @@ def test():
         action = raw_input(">> ")
         if action == "help":
             print env.definitions.keys()
+            continue
+        elif action == "help state":
+            print env.state
             continue
         else:
             state, reward = env.do(action)
