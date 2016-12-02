@@ -112,6 +112,9 @@ class HomeWorld(object):
     def get_location(self):
         return self.rooms[self.state[0]]
 
+    def get_action(self,action):
+        return self.actions[action[0]] + " " + self.objects[action[1]]
+
     def is_executable(self, action, obj):
         loc = self.get_location()
         if action == "go":
@@ -173,6 +176,7 @@ class HomeWorldEnv(gym.Env):
         # data
         self.observation_space = None
         self.vocab_space = self.env.get_vocab_size()
+        self.seq_length = 100
         # we have a two dimensional discrete action space: action x object
         self.action_space = spaces.Tuple((spaces.Discrete(self.env.num_actions), spaces.Discrete(self.env.num_objects)))
         self.status = ""

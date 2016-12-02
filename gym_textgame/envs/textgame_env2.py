@@ -428,6 +428,7 @@ class HomeWorldEnv2(gym.Env):
         # data
         self.observation_space = None
         self.vocab_space = self.env.get_vocab_size()
+        self.seq_length = 100
         # we have a two dimensional discrete action space: action x object
         self.action_space = spaces.Tuple((spaces.Discrete(self.env.num_actions), spaces.Discrete(self.env.num_objects)))
         self.status = ""
