@@ -9,22 +9,12 @@ from gym.utils import seeding
 
 import spacy
 
-
-#import logging
-#logger = logging.getLogger(__name__)
-
-#  -----+------         ------------          ----------
-#  |  hall    |         |living    |          |garden  |
-#  |   05     +---------+   00     +----------+  01    |
+#  -----+------         ------------          ----+-----
+#  |  hall    |         |living    |          |kitchen |
+#  |   05     +---------+   00     +----------+  02    |
 #  |          |         |          |          |        |
 #  ------------         -----+------          ----+-----
-#                            |                    |
-#                       -----+------          ----+-----
-#                       |bedroom   |          |kitchen |
-#                       |   03     +----------+  02    |
-#                       |          |          |        |
-#                       ------------          ----+-----
-
+#
 
 class HomeWorld3(object):
     def __init__(self):
@@ -36,15 +26,9 @@ class HomeWorld3(object):
             "living" :  ["This room has a couch, chairs and TV.",
                          "You have entered the living room. You can watch TV here.",
                          "This room has two sofas, chairs and a chandelier."],
-            "garden" :  ["This space has a swing, flowers and trees.",
-                         "You have arrived at the garden. You can exercise here.",
-                         "This area has plants, grass and rabbits."],
             "kitchen" : ["This room has a fridge, oven, and a sink.",
                          "You have arrived in the kitchen. You can find food and drinks here.",
                          "This living area has pizza, coke, and icecream."],
-            "bedroom" : ["This area has a bed, desk and a dresser.",
-                         "You have arrived in the bedroom. You can rest here.",
-                         "You see a wooden cot and a mattress on top of it."],
             "hall" :    ["This seems to be the entrance room of the house.",
                         ],
         }
@@ -91,23 +75,13 @@ class HomeWorld3(object):
             #
             # Move in direction
             #
-            ("go north") : [
-                {"conds":{"room":"bedroom"}, "effs":{"room":"living"}},
-                {"conds":{"room":"kitchen"}, "effs":{"room":"garden"}},
-            ],
-            ("go south") : [
-                {"conds":{"room":"living"}, "effs":{"room":"bedroom"}},
-                {"conds":{"room":"garden"}, "effs":{"room":"kitchen"}},
-            ],
             ("go east") : [
-                {"conds":{"room":"living"}, "effs":{"room":"garden"}},
-                {"conds":{"room":"bedroom"}, "effs":{"room":"kitchen"}},
                 {"conds":{"room":"hall"}, "effs":{"room":"living"}},
+                {"conds":{"room":"living"}, "effs":{"room":"kitchen"}},
             ],
             ("go west") : [
-                {"conds":{"room":"garden"}, "effs":{"room":"living"}},
-                {"conds":{"room":"kitchen"}, "effs":{"room":"bedroom"}},
                 {"conds":{"room":"living"}, "effs":{"room":"hall"}},
+                {"conds":{"room":"kitchen"}, "effs":{"room":"living"}},
             ],
         }
 
@@ -270,9 +244,9 @@ class HomeWorld3(object):
                         out = out + " " + self.get_info_msg()
                     if self.is_terminal():
                         if self.is_successful():
-                            r = 1
+                            r = 2
                         else:
-                            r = -1
+                            r = -2
                     else:
                         r = -0.01
                     #r = 1 if self.is_terminal() else -0.01
@@ -312,6 +286,7 @@ class HomeWorldEnv3(gym.Env):
         # data
         self.observation_space = None
         self.vocab_space = self.env.get_vocab_size()
+        self.seq_length = 50
         # we have a two dimensional discrete action space: action x object
         self.action_space = spaces.Tuple((spaces.Discrete(self.env.num_actions), spaces.Discrete(self.env.num_objects)))
         self.status = ""
