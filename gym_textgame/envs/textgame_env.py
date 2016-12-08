@@ -3,6 +3,8 @@ import random
 #random.seed(42)
 
 import gym
+import gym_textgame
+
 from gym import error, spaces
 from gym import utils
 from gym.utils import seeding
