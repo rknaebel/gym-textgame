@@ -5,7 +5,7 @@ logger = logging.getLogger(__name__)
 
 register(
     id='HomeWorld-v0',
-    entry_point='gym_textgame.envs:HomeWorldEnv',
+    entry_point='gym_textgame.envs:HomeWorld1',
     timestep_limit=100,
     reward_threshold=1.0,
     nondeterministic = False,
@@ -20,7 +20,7 @@ register(
 )
 register(
     id='HomeWorldHardSmall-v0',
-    entry_point='gym_textgame.envs:HomeWorldEnv3',
+    entry_point='gym_textgame.envs:HomeWorld3',
     timestep_limit=20,
     reward_threshold=1.0,
     nondeterministic = False,

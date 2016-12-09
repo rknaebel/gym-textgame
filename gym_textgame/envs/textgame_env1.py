@@ -1,10 +1,7 @@
 import os, subprocess, time, signal, sys
 import random
 
-import gym
-from gym import error, spaces
-from gym import utils
-from gym.utils import seeding
+from textgame import HomeWorld
 
 import spacy
 
@@ -20,9 +17,12 @@ import spacy
 #      |          |          |        |
 #      ------------          ----------
 
-class HomeWorld(object):
+class HomeWorld1(HomeWorld):
     def __init__(self):
-        self.rng = random.Random()
+        # set the observation space to the vocab size and some kind of sequencial
+        # data
+        self.observation_space = None
+        self.seq_length = 100
         #
         # environment definition
         #
@@ -135,14 +135,6 @@ class HomeWorld(object):
         self.init_vocab()
         # reset and initialize environment
 
-    def set_seed(self, seed):
-        self.rng = random.Random(seed)
-
-    def permutation(self,xs):
-        lst = xs[:]
-        self.rng.shuffle(lst)
-        return lst
-
     def init_vocab(self):
         words = u" ".join(  [d for ds in self.descriptions.values() for d in ds] +
                             self.env_objects.values() +
@@ -152,9 +144,6 @@ class HomeWorld(object):
         nlp = spacy.load("en")
         d = nlp(words)
         self.vocab = set(map(lambda x: x.text, d))
-
-    def get_vocab_size(self):
-        return len(self.vocab)
 
     def get_quest(self):
         if not self.state["quest"]:
@@ -237,57 +226,6 @@ class HomeWorld(object):
 
         return self.get_output()
 
-
-class HomeWorldEnv(gym.Env):
-    metadata = {'render.modes': ['human']}
-
-    def __init__(self):
-        #
-        # Home world
-        #
-        self.env = HomeWorld()
-
-        # set the observation space to the vocab size and some kind of sequencial
-        # data
-        self.observation_space = None
-        self.vocab_space = self.env.get_vocab_size()
-        self.seq_length = 100
-        # we have a two dimensional discrete action space: action x object
-        self.action_space = spaces.Tuple((spaces.Discrete(self.env.num_actions), spaces.Discrete(self.env.num_objects)))
-        self.status = ""
-        self.last_action = None
-        self.last_state = None
-
-    def _step(self, action):
-        #a = self.env.actions[action[0]] + " " + self.env.objects[action[1]]
-        action = self.env.get_action(action)
-        state, reward = self.env.do(action)
-        terminal = self.env.is_terminal()
-
-        self.last_action = action
-        self.last_state = state
-
-        return state, reward, terminal, {}
-
-    def _reset(self):
-        state = self.env.reset()
-        self.last_state = state
-        self.last_action = None
-        return state
-
-    def _seed(self, seed=None):
-        if seed:
-            self.env.set_seed(seed)
-            return [seed]
-        return []
-
-#    def _render(self, mode="human", close=False):
-#        #outfile = StringIO() if mode == 'ansi' else sys.stdout
-#        outfile = sys.stdout
-#        if self.last_action: outfile.write("> {}\n".format(self.last_action))
-#        outfile.write("{}\n".format(self.last_state))
-#        time.sleep(0.5)
-#        return outfile
 
 def main():
     import gym, gym_textgame
