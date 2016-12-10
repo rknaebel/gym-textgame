@@ -26,7 +26,7 @@ class HomeWorld2(HomeWorld):
         # set the observation space to the vocab size and some kind of sequencial
         # data
         self.observation_space = None
-        self.seq_length = 100
+        self.seq_length = 50
         #
         # environment definition
         #

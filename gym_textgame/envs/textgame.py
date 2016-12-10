@@ -1,7 +1,9 @@
 #
 #
 #
+import sys
 import random
+import os, subprocess, time, signal, sys
 
 import gym
 from gym import error, spaces
@@ -15,12 +17,12 @@ class HomeWorld(gym.Env):
     metadata = {'render.modes': ['human']}
 
     def __init__(self):
-        self.vocab_space = self.get_vocab_size()
         # we have a two dimensional discrete action space: action x object
-        self.action_space = spaces.Tuple((spaces.Discrete(self.env.num_actions), spaces.Discrete(self.env.num_objects)))
+        self.action_space = None
         self.status = ""
         self.last_action = None
         self.last_state = None
+        self.vocab = []
         self.rng = random.Random()
 
     def set_seed(self, seed):
@@ -30,9 +32,6 @@ class HomeWorld(gym.Env):
         lst = xs[:]
         self.rng.shuffle(lst)
         return lst
-
-    def get_vocab_size(self):
-        return len(self.vocab)
 
     def _step(self, action):
         action = self.get_action(action)
