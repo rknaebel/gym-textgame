@@ -20,7 +20,6 @@ import spacy
 
 class HomeWorld1(HomeWorld):
     def __init__(self):
-        HomeWorld.__init__(self)
         #
         # environment definition
         #
@@ -113,6 +112,8 @@ class HomeWorld1(HomeWorld):
                 "fat"    : "You are not getting fat",
             },
         }
+
+        HomeWorld.__init__(self)
 
         self.actions = list({a.split(" ")[0] for a in self.definitions})
         self.objects = list({a.split(" ")[1] for a in self.definitions})
