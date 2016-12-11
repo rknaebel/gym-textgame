@@ -1,6 +1,8 @@
 import random
 
 from textgame import HomeWorld
+from gym import spaces, error, utils
+
 import spacy
 
 #  -----+------         ------------          ----+-----
@@ -12,10 +14,6 @@ import spacy
 
 class HomeWorld3(HomeWorld):
     def __init__(self):
-        # set the observation space to the vocab size and some kind of sequencial
-        # data
-        self.observation_space = None
-        self.seq_length = 50
         #
         # environment definition
         #
@@ -26,7 +24,7 @@ class HomeWorld3(HomeWorld):
             "kitchen" : ["This room has a fridge, oven, and a sink.",
                          "You have arrived in the kitchen. You can find food and drinks here.",
                          "This living area has pizza, coke, and icecream."],
-            "hall" :    ["This seems to be the entrance room of the house.",
+            "hall" :    ["This seems to be the entrance room of the house.", "You arrived in the front entrance of the house.", "This room has a little table and place for wardrobe and shoes."
                         ],
         }
 
@@ -107,6 +105,7 @@ class HomeWorld3(HomeWorld):
                 2: "Take a drink which is {1} to get {0}.",
             }
         }
+        HomeWorld.__init__(self)
 
         self.actions = list({a.split(" ")[0] for a in self.definitions})
         self.objects = list({a.split(" ")[1] for a in self.definitions})
@@ -135,8 +134,14 @@ class HomeWorld3(HomeWorld):
         }
 
         self.init_vocab()
-        # reset and initialize environment
+        
+        self.vocab_space = self.get_vocab_size()
+        self.action_space = spaces.Tuple((spaces.Discrete(self.num_actions), spaces.Discrete(self.num_objects)))
+        self.observation_space = None
+        self.seq_length = 50
 
+    def get_vocab_size(self):
+        return len(self.vocab)
 
     def init_vocab(self):
         words = u" ".join(  [d for ds in self.descriptions.values() for d in ds] +
@@ -186,7 +191,7 @@ class HomeWorld3(HomeWorld):
         quest = self.get_quest()
         output = [room, quest]
         # shuffle the output for increasing states!
-        #self.rng.shuffle(output)
+        self.rng.shuffle(output)
         return " ".join(output)
 
     def get_location(self):
