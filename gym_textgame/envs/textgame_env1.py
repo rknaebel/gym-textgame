@@ -4,7 +4,8 @@ import random
 from textgame import HomeWorld
 from gym import spaces, error, utils
 
-import spacy
+#import spacy
+import re
 
 #      ------------          ----------
 #      |living    |          |garden  |
@@ -139,10 +140,7 @@ class HomeWorld1(HomeWorld):
         self.observation_space = None
         self.seq_length = 30
 
-        # reset and initialize environment
 
-    def get_vocab_size(self):
-        return len(self.vocab)
 
     def init_vocab(self):
         words = u" ".join(  [d for ds in self.descriptions.values() for d in ds] +
@@ -150,9 +148,8 @@ class HomeWorld1(HomeWorld):
                             [t for k,v in self.text.iteritems() for t in v.values()] +
                             self.extra_vocab
         )
-        nlp = spacy.load("en")
-        d = nlp(words)
-        self.vocab = set(map(lambda x: x.text, d))
+        words = re.sub(r'[^\w\s]','',words)
+        self.vocab = set(re.split(r'\s*', words))
 
     def get_quest(self):
         if not self.state["quest"]:
