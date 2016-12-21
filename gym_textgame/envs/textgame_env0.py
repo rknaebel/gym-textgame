@@ -4,7 +4,7 @@ import random
 from textgame import HomeWorld
 from gym import spaces, error, utils
 
-import spacy
+import re
 
 #      ------------          ----------
 #      |living    |          |garden  |
@@ -108,9 +108,8 @@ class HomeWorld0(HomeWorld):
                             [t for k,v in self.text.iteritems() for t in v.values()] +
                             self.extra_vocab
         )
-        nlp = spacy.load("en")
-        d = nlp(words)
-        self.vocab = set(map(lambda x: x.text, d))
+        words = re.sub(r'[^\w\s]','',words)
+        self.vocab = set(re.split(r'\s*', words))
 
     def get_quest(self):
         if not self.state["quest"]:

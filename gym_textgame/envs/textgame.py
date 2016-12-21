@@ -28,6 +28,9 @@ class HomeWorld(gym.Env):
     def set_seed(self, seed):
         self.rng = random.Random(seed)
 
+    def get_vocab_size(self):
+        return len(self.vocab)
+
     def permutation(self,xs):
         lst = xs[:]
         self.rng.shuffle(lst)
