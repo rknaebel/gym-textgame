@@ -60,7 +60,7 @@ class HomeWorld2(HomeWorld):
             "red" : "A red fluid",
             "green" : "A green fluid",
             "blue" : "A blue fluid",
-            "recipe_book" : "A book full of recipies.",
+            "recipe_book" : "A book full of recipes.",
         }
 
         self.definitions = {
@@ -289,12 +289,15 @@ class HomeWorld2(HomeWorld):
             results = self.permutation(self.state["recipies"].items())
             for s,i in zip(self.permutation(self.text["recipies"].values()),self.state["recipies"].items()):
                 info += s.format(i[0],i[1]) + " "
+            self.hints_log[0] = 1
         elif self.state["info"] == "energy_error":
             info = self.text["info"]["energy_error"].format(self.state["energy_btn"])
+            self.hints_log[1] = 1
         elif self.state["info"] == "old_food":
             info = self.text["info"]["old_food"]
         elif self.state["room"] == "hall":
             info = self.text["info"]["food_warning"].format(self.state["old"],self.state["poisoned"])
+            self.hints_log[2] = 1
         self.state["info"] = ""
         return info
 
@@ -368,6 +371,7 @@ class HomeWorld2(HomeWorld):
         self.state["description"] = self.rng.choice(self.descriptions[location])
 
         quests = self.permutation(self.quests)
+        self.quest_log = ("sleepy","bored","hungry").index(quests[0])
         self.state["quest"] = quests[0]
         self.state["mislead"] = quests[1]
 

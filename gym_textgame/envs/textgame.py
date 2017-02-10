@@ -4,6 +4,7 @@
 import sys
 import random
 import os, subprocess, time, signal, sys
+import csv
 
 import gym
 from gym import error, spaces
@@ -24,6 +25,18 @@ class HomeWorld(gym.Env):
         self.last_state = None
         self.vocab = []
         self.rng = random.Random()
+        self.logger_file = open('game_logs.csv', 'wb')
+        self.log_writer = csv.writer(self.logger_file, delimiter=",", quotechar="'", quoting=csv.QUOTE_MINIMAL)
+        self.step_log = 0
+        self.mode = 0
+        self.ep_log = 0
+        self.hints_log = [0, 0, 0] # sleepy, bored, hungry
+        self.quest_log = 0
+    
+    def set_mode(self, mode):
+        if mode == "train":
+            self.mode = 0
+        self.mode = 1
 
     def set_seed(self, seed):
         self.rng = random.Random(seed)
@@ -40,6 +53,9 @@ class HomeWorld(gym.Env):
         action = self.get_action(action)
         state, reward = self.do(action)
         terminal = self.is_terminal()
+        
+        self.log_writer.writerow([self.mode, self.ep_log, self.step_log, action, state, reward, terminal, self.hints_log, self.quest_log])
+        self.step_log += 1
 
         self.last_action = action
         self.last_state = state
@@ -47,6 +63,11 @@ class HomeWorld(gym.Env):
         return state, reward, terminal, {}
 
     def _reset(self):
+        self.step_log = 0
+        self.ep_log += 1
+        self.hints_log = [0, 0, 0] # sleepy, bored, hungry
+        self.quest_log = 0
+        ##################
         state = self.reset()
         self.last_state = state
         self.last_action = None
