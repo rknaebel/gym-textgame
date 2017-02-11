@@ -289,14 +289,17 @@ class HomeWorld2(HomeWorld):
             results = self.permutation(self.state["recipies"].items())
             for s,i in zip(self.permutation(self.text["recipies"].values()),self.state["recipies"].items()):
                 info += s.format(i[0],i[1]) + " "
+            #print "SLEEPY INFO"
             self.hints_log[0] = 1
         elif self.state["info"] == "energy_error":
             info = self.text["info"]["energy_error"].format(self.state["energy_btn"])
+            #print "BORED INFO"
             self.hints_log[1] = 1
         elif self.state["info"] == "old_food":
             info = self.text["info"]["old_food"]
         elif self.state["room"] == "hall":
             info = self.text["info"]["food_warning"].format(self.state["old"],self.state["poisoned"])
+            #print "HUNGRY INFO1"
             self.hints_log[2] = 1
         self.state["info"] = ""
         return info
@@ -306,6 +309,8 @@ class HomeWorld2(HomeWorld):
         room = self.get_room_desc()
         if self.state["room"] == "hall":
             room = room + " " + self.text["info"]["food_warning"].format(self.state["old"],self.state["poisoned"])
+            #print "HUNGRY INFO2"
+            self.hints_log[2] = 1
         # get quest description
         quest = self.get_quest()
         output = [room, quest]
@@ -365,7 +370,7 @@ class HomeWorld2(HomeWorld):
         # if not, return "Nothing happend." and same state description
         return "Nothing happend. " + self.get_output(), -0.1
 
-    def reset(self):
+    def reset_env(self):
         location = self.rng.choice(self.rooms)
         self.state["room"] = location
         self.state["description"] = self.rng.choice(self.descriptions[location])
