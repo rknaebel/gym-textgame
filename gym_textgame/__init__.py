@@ -41,3 +41,11 @@ register(
     nondeterministic = False,
 )
 
+register(
+    id='HomeWorld5-v0',
+    entry_point='gym_textgame.envs:HomeWorld5',
+    timestep_limit=20,
+    reward_threshold=1.0,
+    nondeterministic = False,
+)
+
