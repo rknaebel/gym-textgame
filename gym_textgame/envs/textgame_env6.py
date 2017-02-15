@@ -17,7 +17,7 @@ import re
 #  ------------          ----+-----
 #                       
 
-class HomeWorld5(HomeWorld):
+class HomeWorld6(HomeWorld):
     def __init__(self):
         #
         # environment definition
@@ -53,35 +53,42 @@ class HomeWorld5(HomeWorld):
         }
 
         self.definitions = {
-            ("eat apple") :  [{
-                "conds" :{"room":"kitchen", "quest":"hungry", "poisoned":"apple"},
-                "effs"  :{"dead":True}
+            ("watch tv") : [{
+                "conds" : {"room":"living", "quest":"bored", "energy":True},
+                "effs"    : {"quest":""}
                 },{
-                "conds" :{"room":"kitchen", "quest":"hungry","old":"apple"},
-                "effs"  :{}
-                },{
-                "conds" :{"room":"kitchen", "quest":"hungry"},
-                "effs"  :{"quest":""}
+                "conds" : {"room":"living", "quest":"bored", "energy":False},
+                "effs"    : {}
             }],
-            ("eat cheese") :  [{
-                "conds" :{"room":"kitchen", "quest":"hungry", "poisoned":"cheese"},
+            ("press rbutton") : [{
+                "conds" :{"room":"garden", "energy_btn":"rbutton"},
+                "effs"  :{"energy":True}
+                },{
+                "conds" :{"room":"garden", "shock_btn":"rbutton"},
                 "effs"  :{"dead":True}
                 },{
-                "conds" :{"room":"kitchen", "quest":"hungry","old":"cheese"},
-                "effs"  :{}
-                },{
-                "conds" :{"room":"kitchen", "quest":"hungry"},
-                "effs"  :{"quest":""}
+                "conds":{"room":"garden"},
+                "effs" : {}
             }],
-            ("eat pizza") :  [{
-                "conds" :{"room":"kitchen", "quest":"hungry", "poisoned":"pizza"},
+            ("press gbutton") : [{
+                "conds" :{"room":"garden", "energy_btn":"gbutton"},
+                "effs"  :{"energy":True}
+                },{
+                "conds" :{"room":"garden", "shock_btn":"gbutton"},
                 "effs"  :{"dead":True}
                 },{
-                "conds" :{"room":"kitchen", "quest":"hungry","old":"pizza"},
-                "effs"  :{}
+                "conds":{"room":"garden"},
+                "effs" : {}
+            }],
+            ("press bbutton") : [{
+                "conds" :{"room":"garden", "energy_btn":"bbutton"},
+                "effs"  :{"energy":True}
                 },{
-                "conds" :{"room":"kitchen", "quest":"hungry"},
-                "effs"  :{"quest":""}
+                "conds" :{"room":"garden", "shock_btn":"bbutton"},
+                "effs"  :{"dead":True}
+                },{
+                "conds":{"room":"garden"},
+                "effs" : {}
             }],
             #
             # Move in direction
@@ -106,7 +113,7 @@ class HomeWorld5(HomeWorld):
 
         self.text = {
             "quest" : {
-                "hungry" : "You are hungry",
+                "bored"  : "You are bored",
             },
             "mislead" : {
                 "hungry" : "You are not hungry",
@@ -114,7 +121,7 @@ class HomeWorld5(HomeWorld):
                 "bored"  : "You are not bored",
             },
             "info" : {
-                "energy_error" : "Seems the tv does not work because of missing energy. Press the {} in the pantry.",
+                "energy_error" : "Seems the tv does not work because of missing energy. Press the {} in the garden.",
                 "old_food" : "The food does not seem good anymore.",
                 "food_warning" : "You cannot enjoy the {} anymore, it is old! Attention: do not eat the poisoned {}.",
                 "recipe_wrong" : "The recipe seems to have the wrong effect."
@@ -268,11 +275,11 @@ class HomeWorld5(HomeWorld):
         self.state["room"] = location
         self.state["description"] = self.rng.choice(self.descriptions[location])
 
-        quests = self.permutation(self.quests[1:])
+        quests = self.permutation(self.quests[0:2])
         self.quest_log = ("sleepy","bored","hungry").index(self.quests[0])
-        self.state["quest"] = self.quests[0]
+        self.state["quest"] = self.quests[2]
         self.state["mislead"] = quests[0]
-
+        
         foods = self.permutation(["apple", "cheese", "pizza"])
         self.state["old"] = foods[1]
         self.state["poisoned"] = foods[2]
@@ -293,14 +300,14 @@ class HomeWorld5(HomeWorld):
         
         self.state["dead"] = False
         
-        out = self.get_info_msg() + self.get_output()
+        out = self.get_info_msg() + " " + self.get_output()
 
         return out
 
 
 def main():
     import gym, gym_textgame
-    env = gym.make("HomeWorld41-v0")
+    env = gym.make("HomeWorld6-v0")
     done = False
     states = []
     print env.action_space
@@ -317,7 +324,7 @@ def main():
     print env.env.state
 
 def test():
-    env = HomeWorld5()
+    env = HomeWorld6()
     done = False
     print env.reset_env()
     while not done:

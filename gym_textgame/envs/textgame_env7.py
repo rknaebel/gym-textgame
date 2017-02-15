@@ -17,7 +17,7 @@ import re
 #  ------------          ----+-----
 #                       
 
-class HomeWorld5(HomeWorld):
+class HomeWorld7(HomeWorld):
     def __init__(self):
         #
         # environment definition
@@ -53,35 +53,42 @@ class HomeWorld5(HomeWorld):
         }
 
         self.definitions = {
-            ("eat apple") :  [{
-                "conds" :{"room":"kitchen", "quest":"hungry", "poisoned":"apple"},
-                "effs"  :{"dead":True}
-                },{
-                "conds" :{"room":"kitchen", "quest":"hungry","old":"apple"},
+            #
+            # Ingredients
+            #
+            ("read red") : [{
+                "conds":{"room":"bedroom"},
                 "effs"  :{}
-                },{
-                "conds" :{"room":"kitchen", "quest":"hungry"},
-                "effs"  :{"quest":""}
             }],
-            ("eat cheese") :  [{
-                "conds" :{"room":"kitchen", "quest":"hungry", "poisoned":"cheese"},
-                "effs"  :{"dead":True}
-                },{
-                "conds" :{"room":"kitchen", "quest":"hungry","old":"cheese"},
+            ("read green") : [{
+                "conds":{"room":"bedroom"},
                 "effs"  :{}
-                },{
-                "conds" :{"room":"kitchen", "quest":"hungry"},
-                "effs"  :{"quest":""}
             }],
-            ("eat pizza") :  [{
-                "conds" :{"room":"kitchen", "quest":"hungry", "poisoned":"pizza"},
-                "effs"  :{"dead":True}
-                },{
-                "conds" :{"room":"kitchen", "quest":"hungry","old":"pizza"},
+            ("read blue") : [{
+                "conds":{"room":"bedroom"},
                 "effs"  :{}
-                },{
-                "conds" :{"room":"kitchen", "quest":"hungry"},
+            }],
+            ####################################################################
+            ("drink red") : [{
+                "conds":{"room":"bedroom", "quest":"sleepy", "recipe_good":"red"},
                 "effs"  :{"quest":""}
+                },{
+                "conds":{"room":"bedroom", "recipe_bad":"red"},
+                "effs" : {"quest":"", "dead":True}
+            }],
+            ("drink green") : [{
+                "conds":{"room":"bedroom", "quest":"sleepy", "recipe_good":"green"},
+                "effs"  :{"quest":""}
+                },{
+                "conds":{"room":"bedroom", "recipe_bad":"green"},
+                "effs" : {"quest":"", "dead":True}
+            }],
+            ("drink blue") : [{
+                "conds":{"room":"bedroom", "quest":"sleepy", "recipe_good":"blue"},
+                "effs"  :{"quest":""}
+                },{
+                "conds":{"room":"bedroom", "recipe_bad":"blue"},
+                "effs" : {"quest":"", "dead":True}
             }],
             #
             # Move in direction
@@ -107,6 +114,8 @@ class HomeWorld5(HomeWorld):
         self.text = {
             "quest" : {
                 "hungry" : "You are hungry",
+                "sleepy" : "You are sleepy",
+                "bored"  : "You are bored",
             },
             "mislead" : {
                 "hungry" : "You are not hungry",
@@ -268,9 +277,9 @@ class HomeWorld5(HomeWorld):
         self.state["room"] = location
         self.state["description"] = self.rng.choice(self.descriptions[location])
 
-        quests = self.permutation(self.quests[1:])
+        quests = self.permutation(self.quests[:1] + self.quests[2:])
         self.quest_log = ("sleepy","bored","hungry").index(self.quests[0])
-        self.state["quest"] = self.quests[0]
+        self.state["quest"] = self.quests[1]
         self.state["mislead"] = quests[0]
 
         foods = self.permutation(["apple", "cheese", "pizza"])
@@ -300,7 +309,7 @@ class HomeWorld5(HomeWorld):
 
 def main():
     import gym, gym_textgame
-    env = gym.make("HomeWorld41-v0")
+    env = gym.make("HomeWorld7-v0")
     done = False
     states = []
     print env.action_space
@@ -317,7 +326,7 @@ def main():
     print env.env.state
 
 def test():
-    env = HomeWorld5()
+    env = HomeWorld7()
     done = False
     print env.reset_env()
     while not done:

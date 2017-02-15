@@ -49,3 +49,19 @@ register(
     nondeterministic = False,
 )
 
+register(
+    id='HomeWorld6-v0',
+    entry_point='gym_textgame.envs:HomeWorld6',
+    timestep_limit=20,
+    reward_threshold=1.0,
+    nondeterministic = False,
+)
+
+register(
+    id='HomeWorld7-v0',
+    entry_point='gym_textgame.envs:HomeWorld7',
+    timestep_limit=20,
+    reward_threshold=1.0,
+    nondeterministic = False,
+)
+
