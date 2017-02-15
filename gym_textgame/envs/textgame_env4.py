@@ -4,25 +4,20 @@ from gym import spaces, error, utils
 
 import re
 
-#  -----+------         ------------          ----------
-#  |  hall    |         |living    |          |garden  |
-#  |   05     +---------+   00     +----------+  01    |
-#  |          |         |          |          |        |
-#  ------------         -----+------          ----+-----
-#                            |                    |
-#                       -----+------          ----+-----
-#                       |bedroom   |          |kitchen |
-#                       |   03     +----------+  02    |
-#                       |          |          |        |
-#                       ------------          ----+-----
-#                                                 |
-#                                             ----+-----
-#                                             |pantry  |
-#                                             |  04    |
-#                                             |        |
-#                                             ----+-----
+#  ------------          ----------
+#  |living    |          |garden  |
+#  +   00     +----------+  01    |
+#  |          |          |        |
+#  -----+------          ----+-----
+#       |                    |
+#  -----+------          ----+-----
+#  |bedroom   |          |kitchen |
+#  |   03     +----------+  02    |
+#  |          |          |        |
+#  ------------          ----+-----
+#                       
 
-class HomeWorld2(HomeWorld):
+class HomeWorld4(HomeWorld):
     def __init__(self):
         #
         # environment definition
@@ -31,20 +26,15 @@ class HomeWorld2(HomeWorld):
             "living" :  ["This room has a couch, chairs and TV.",
                          "You have entered the living room. You can watch TV here.",
                          "This room has two sofas, chairs and a chandelier."],
-            "garden" :  ["This space has a swing, flowers and trees.",
-                         "You have arrived at the garden. You can exercise here.",
-                         "This area has plants, grass and rabbits."],
+            "garden" :  ["This space has buttons, flowers and trees.",
+                         "You have arrived at the garden. You can press buttons here.",
+                         "This area has plants, grass and buttons."],
             "kitchen" : ["This room has a fridge, oven, and a sink.",
                          "You have arrived in the kitchen. You can find food and drinks here.",
                          "This living area has pizza, coke, and icecream."],
             "bedroom" : ["This area has a bed, desk and a dresser.",
                          "You have arrived in the bedroom. You can rest here.",
                          "You see a wooden cot and a mattress on top of it."],
-            "pantry" :  ["A small room for storing food and other kinds of goods.",
-                         "This area is usually used for preparing cold foods.",
-                        ],
-            "hall" :    ["This seems to be the entrance room of the house.",
-                        ],
         }
 
         self.rooms = self.descriptions.keys()
@@ -60,7 +50,6 @@ class HomeWorld2(HomeWorld):
             "red" : "A red fluid",
             "green" : "A green fluid",
             "blue" : "A blue fluid",
-            "recipe_book" : "A book full of recipes.",
         }
 
         self.definitions = {
@@ -69,7 +58,7 @@ class HomeWorld2(HomeWorld):
                 "effs"  :{"dead":True}
                 },{
                 "conds" :{"room":"kitchen", "quest":"hungry","old":"apple"},
-                "effs"  :{"info":"old_food"}
+                "effs"  :{}
                 },{
                 "conds" :{"room":"kitchen", "quest":"hungry"},
                 "effs"  :{"quest":""}
@@ -79,7 +68,7 @@ class HomeWorld2(HomeWorld):
                 "effs"  :{"dead":True}
                 },{
                 "conds" :{"room":"kitchen", "quest":"hungry","old":"cheese"},
-                "effs"  :{"info":"old_food"}
+                "effs"  :{}
                 },{
                 "conds" :{"room":"kitchen", "quest":"hungry"},
                 "effs"  :{"quest":""}
@@ -89,7 +78,7 @@ class HomeWorld2(HomeWorld):
                 "effs"  :{"dead":True}
                 },{
                 "conds" :{"room":"kitchen", "quest":"hungry","old":"pizza"},
-                "effs"  :{"info":"old_food"}
+                "effs"  :{}
                 },{
                 "conds" :{"room":"kitchen", "quest":"hungry"},
                 "effs"  :{"quest":""}
@@ -99,41 +88,37 @@ class HomeWorld2(HomeWorld):
                 "effs"    : {"quest":""}
                 },{
                 "conds" : {"room":"living", "quest":"bored", "energy":False},
-                "effs"    : {"info":"energy_error"}
+                "effs"    : {}
             }],
             ("press rbutton") : [{
-                "conds" :{"room":"pantry", "energy_btn":"rbutton"},
+                "conds" :{"room":"garden", "energy_btn":"rbutton"},
                 "effs"  :{"energy":True}
                 },{
-                "conds" :{"room":"pantry", "shock_btn":"rbutton"},
+                "conds" :{"room":"garden", "shock_btn":"rbutton"},
                 "effs"  :{"dead":True}
                 },{
-                "conds":{"room":"pantry"},
+                "conds":{"room":"garden"},
                 "effs" : {}
             }],
             ("press gbutton") : [{
-                "conds" :{"room":"pantry", "energy_btn":"gbutton"},
+                "conds" :{"room":"garden", "energy_btn":"gbutton"},
                 "effs"  :{"energy":True}
                 },{
-                "conds" :{"room":"pantry", "shock_btn":"gbutton"},
+                "conds" :{"room":"garden", "shock_btn":"gbutton"},
                 "effs"  :{"dead":True}
                 },{
-                "conds":{"room":"pantry"},
+                "conds":{"room":"garden"},
                 "effs" : {}
             }],
             ("press bbutton") : [{
-                "conds" :{"room":"pantry", "energy_btn":"bbutton"},
+                "conds" :{"room":"garden", "energy_btn":"bbutton"},
                 "effs"  :{"energy":True}
                 },{
-                "conds" :{"room":"pantry", "shock_btn":"bbutton"},
+                "conds" :{"room":"garden", "shock_btn":"bbutton"},
                 "effs"  :{"dead":True}
                 },{
-                "conds":{"room":"pantry"},
+                "conds":{"room":"garden"},
                 "effs" : {}
-            }],
-            ("read recipe_book") : [{
-                "conds" :{"room":"garden",},
-                "effs"  :{"info":"recipe_info"}
             }],
             #
             # Ingredients
@@ -178,22 +163,18 @@ class HomeWorld2(HomeWorld):
             ("go north") : [
                 {"conds":{"room":"bedroom"}, "effs":{"room":"living"}},
                 {"conds":{"room":"kitchen"}, "effs":{"room":"garden"}},
-                {"conds":{"room":"pantry"}, "effs":{"room":"kitchen"}},
             ],
             ("go south") : [
                 {"conds":{"room":"living"}, "effs":{"room":"bedroom"}},
                 {"conds":{"room":"garden"}, "effs":{"room":"kitchen"}},
-                {"conds":{"room":"kitchen"}, "effs":{"room":"pantry"}},
             ],
             ("go east") : [
                 {"conds":{"room":"living"}, "effs":{"room":"garden"}},
                 {"conds":{"room":"bedroom"}, "effs":{"room":"kitchen"}},
-                {"conds":{"room":"hall"}, "effs":{"room":"living"}},
             ],
             ("go west") : [
                 {"conds":{"room":"garden"}, "effs":{"room":"living"}},
                 {"conds":{"room":"kitchen"}, "effs":{"room":"bedroom"}},
-                {"conds":{"room":"living"}, "effs":{"room":"hall"}},
             ],
         }
 
@@ -202,13 +183,11 @@ class HomeWorld2(HomeWorld):
                 "hungry" : "You are hungry",
                 "sleepy" : "You are sleepy",
                 "bored"  : "You are bored",
-                "fat"    : "You are getting fat",
             },
             "mislead" : {
                 "hungry" : "You are not hungry",
                 "sleepy" : "You are not sleepy",
                 "bored"  : "You are not bored",
-                "fat"    : "You are not getting fat",
             },
             "info" : {
                 "energy_error" : "Seems the tv does not work because of missing energy. Press the {} in the pantry.",
@@ -255,7 +234,7 @@ class HomeWorld2(HomeWorld):
         self.vocab_space = self.get_vocab_size()
         self.action_space = spaces.Tuple((spaces.Discrete(self.num_actions), spaces.Discrete(self.num_objects)))
         self.observation_space = None
-        self.seq_length = 50
+        self.seq_length = 60
 
     def get_vocab_size(self):
         return len(self.vocab)
@@ -284,33 +263,26 @@ class HomeWorld2(HomeWorld):
     def get_info_msg(self):
         # generate info message
         info = ""
-        if self.state["info"] == "recipe_info":
+        if self.state["quest"] == "sleepy":
             msgs = self.permutation(self.text["recipies"].values())
             results = self.permutation(self.state["recipies"].items())
             for s,i in zip(self.permutation(self.text["recipies"].values()),self.state["recipies"].items()):
                 info += s.format(i[0],i[1]) + " "
             #print "SLEEPY INFO"
             self.hints_log[0] = 1
-        elif self.state["info"] == "energy_error":
+        elif self.state["quest"] == "bored":
             info = self.text["info"]["energy_error"].format(self.state["energy_btn"])
             #print "BORED INFO"
             self.hints_log[1] = 1
-        elif self.state["info"] == "old_food":
-            info = self.text["info"]["old_food"]
-        elif self.state["room"] == "hall":
+        elif self.state["quest"] == "hungry":
             info = self.text["info"]["food_warning"].format(self.state["old"],self.state["poisoned"])
             #print "HUNGRY INFO1"
             self.hints_log[2] = 1
-        self.state["info"] = ""
         return info
 
     def get_output(self):
         # get room description
         room = self.get_room_desc()
-        if self.state["room"] == "hall":
-            room = room + " " + self.text["info"]["food_warning"].format(self.state["old"],self.state["poisoned"])
-            #print "HUNGRY INFO2"
-            self.hints_log[2] = 1
         # get quest description
         quest = self.get_quest()
         output = [room, quest]
@@ -352,25 +324,16 @@ class HomeWorld2(HomeWorld):
                     self.state[f] = v
                 if self.is_movement(a):
                     self.state["description"] = self.rng.choice(self.descriptions[self.state["room"]])
-                    out = self.get_output()
-                    if "missing" in out or "sweet" in out or "enjoy" in out:
-                        return out, 0.01
-                    return out, -0.01
+                    return self.get_output(), -0.01
                 else:
-                    obj = a.split(" ")[1]
-                    out = self.env_objects[obj]
-                    if self.state["info"]:
-                        out = out + " " + self.get_info_msg()
+                    out = self.get_output()
                     if self.is_terminal():
                         if self.is_successful():
                             r = 1
                         else:
                             r = -1
                     else:
-                        if "missing" in out or "sweet" in out or "enjoy" in out:
-                            r = 0.01
-                        else:
-                            r = -0.01
+                        r = -0.01
                     #r = 1 if self.is_terminal() else -0.01
                     return out, r
         # if not, return "Nothing happend." and same state description
@@ -386,7 +349,6 @@ class HomeWorld2(HomeWorld):
         self.state["quest"] = quests[0]
         self.state["mislead"] = quests[1]
 
-
         foods = self.permutation(["apple", "cheese", "pizza"])
         self.state["old"] = foods[1]
         self.state["poisoned"] = foods[2]
@@ -400,19 +362,21 @@ class HomeWorld2(HomeWorld):
             "mediocre":recipe[1],
             "bad":recipe[2],
         }
-
+        
         buttons = self.permutation(["rbutton", "gbutton", "bbutton"])
         self.state["energy_btn"] = buttons[0]
         self.state["shock_btn"] = buttons[1]
-
+        
         self.state["dead"] = False
+        
+        out = self.get_info_msg() + self.get_output()
 
-        return self.get_output()
+        return out
 
 
 def main():
     import gym, gym_textgame
-    env = gym.make("HomeWorldHard-v0")
+    env = gym.make("HomeWorld4-v0")
     done = False
     states = []
     print env.action_space
@@ -429,9 +393,9 @@ def main():
     print env.env.state
 
 def test():
-    env = HomeWorld2()
+    env = HomeWorld4()
     done = False
-    print env.reset()
+    print env.reset_env()
     while not done:
         action = raw_input(">> ")
         if action == "help":
